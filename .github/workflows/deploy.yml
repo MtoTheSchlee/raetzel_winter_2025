@@ -46,29 +46,44 @@ jobs:
           npm audit --audit-level=high || true
           echo "Security audit completed"
 
-      - name: Build Production Assets
+      - name: Build Production Assets  
         run: |
           echo "Building production assets..."
+          
+          # Create directory structure
           mkdir -p dist/scripts
-          cp scripts/security.static.min.js dist/scripts/ || echo "No minified JS found"
-          cp scripts/security.static.min.js.map dist/scripts/ || echo "No source map found"
+          mkdir -p dist/styles
+          mkdir -p dist/music
+          
+          # Copy all JavaScript files
+          cp -r scripts/* dist/scripts/ || echo "No scripts found"
+          
+          # Copy all CSS files  
+          cp -r styles/* dist/styles/ || echo "No styles found"
+          
+          # Copy all music files (including large MP3s)
+          echo "Copying music assets..."
+          cp -r music/* dist/music/ || echo "No music files found"
+          ls -la music/
+          ls -la dist/music/
+          
+          # Copy root files
+          cp index.html dist/index.html || echo "No index.html found"
+          cp *.html dist/ 2>/dev/null || echo "No additional HTML files"
 
-          # Copy index.html if missing
-          if [ ! -f "dist/index.html" ]; then
-            echo "Copying index.html to dist/"
-            cp index.html dist/index.html || echo "No index.html found in root"
-          fi
-
-          # Generate build info
+          # Generate build info with v3.9 version
           {
             echo "Build Date: $(date)"
-            echo "Commit: $(git rev-parse --short HEAD)"
-            echo "Version: v3.3"
-            SRI_HASH=$(openssl dgst -sha384 -binary dist/scripts/security.static.min.js | openssl base64 -A)
+            echo "Commit: $(git rev-parse --short HEAD)"  
+            echo "Version: v3.9 - Music Integration"
+            SRI_HASH=$(openssl dgst -sha384 -binary dist/scripts/security.static.min.js | openssl base64 -A || echo "No SRI hash")
             echo "SRI Hash: sha384-${SRI_HASH}"
+            echo "Music Assets: $(ls -la dist/music/ | wc -l) files"
           } > dist/BUILD_INFO.txt
 
-          echo "Build completed successfully"
+          echo "✅ Build completed successfully"
+          echo "📁 Directory structure:"
+          find dist -type f -name "*.mp3" -exec ls -lh {} \;
           ls -la dist/
 
       - name: Upload Pages Artifact
