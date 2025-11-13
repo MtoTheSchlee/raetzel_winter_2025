@@ -89,15 +89,40 @@ class ChristmasMusicPlayer {
             this.pause();
         });
 
-        // Volume Slider
-        this.volumeSlider.addEventListener('input', (e) => {
-            this.setVolume(e.target.value / 100);
-        });
+        // Volume Slider - nur wenn nicht mobil
+        if (this.volumeSlider) {
+            this.volumeSlider.addEventListener('input', (e) => {
+                this.setVolume(e.target.value / 100);
+            });
+        }
 
         // Track Ende -> nächster Track
         document.addEventListener('ended', () => {
             this.nextTrack();
         });
+
+        // Mobile Check und Info
+        this.checkMobileDevice();
+    }
+
+    /**
+     * Check ob mobiles Gerät und zeige entsprechende Info
+     */
+    checkMobileDevice() {
+        const isMobile = /iPhone|iPad|iPod|Android|BlackBerry|Windows Phone/i.test(navigator.userAgent) 
+                         || window.innerWidth <= 640;
+        
+        if (isMobile && this.statusEl) {
+            // Zusätzlicher Hinweis für mobile Nutzer
+            const originalInit = () => {
+                setTimeout(() => {
+                    if (this.statusEl.textContent === 'Bereit') {
+                        this.statusEl.textContent = 'Bereit - Nutze Gerätevolume';
+                    }
+                }, 1000);
+            };
+            originalInit();
+        }
     }
 
     /**

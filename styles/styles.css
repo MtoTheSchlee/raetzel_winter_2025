@@ -915,7 +915,40 @@ body {
     }
     
     .music-player__volume {
-        display: none; /* Verstecke Volume auf mobil */
+        /* Zeige nur Volume Icon auf mobil, verstecke Slider */
+        gap: 0;
+    }
+    
+    .music-player__volume-slider {
+        display: none; /* Verstecke Slider auf mobil */
+    }
+    
+    .music-player__volume-icon {
+        font-size: var(--font-size-base);
+        cursor: help;
+        position: relative;
+    }
+    
+    /* Tooltip für mobile Nutzer */
+    .music-player__volume-icon::after {
+        content: "Nutze Geräte-Lautstärke";
+        position: absolute;
+        top: -35px;
+        right: 0;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 1001;
+    }
+    
+    .music-player__volume-icon:hover::after {
+        opacity: 1;
     }
     
     .music-player__info {
