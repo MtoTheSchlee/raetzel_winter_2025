@@ -1,0 +1,207 @@
+/**
+ * Design Tokens für Rätsel Winter 2025
+ * Zentrale Definition aller Design-Werte für konsistentes Styling
+ */
+
+:root {
+    /* === Farbpalette === */
+    /* Primärfarben (Winter/Weihnachtsthema) */
+    --color-primary: #1a4b6b;          /* Tiefes Winterblau */
+    --color-primary-light: #2d5f7f;    /* Helleres Blau */
+    --color-primary-dark: #0f3449;     /* Dunkles Blau */
+    
+    /* Akzentfarben */
+    --color-accent: #c41e3a;           /* Weihnachtsrot */
+    --color-accent-light: #d63851;     /* Helleres Rot */
+    --color-accent-dark: #a31729;      /* Dunkles Rot */
+    
+    /* Sekundärfarben */
+    --color-secondary: #2e7d32;        /* Tannengrün */
+    --color-secondary-light: #4caf50;  /* Helleres Grün */
+    --color-secondary-dark: #1b5e20;   /* Dunkles Grün */
+    
+    /* Neutral-/Grautöne */
+    --color-neutral-50: #fafafa;       /* Sehr helles Grau */
+    --color-neutral-100: #f5f5f5;      /* Helles Grau */
+    --color-neutral-200: #e5e5e5;      /* Mittel-hell Grau */
+    --color-neutral-300: #d4d4d4;      /* Mittel Grau */
+    --color-neutral-400: #a3a3a3;      /* Mittel-dunkel Grau */
+    --color-neutral-500: #737373;      /* Dunkel Grau */
+    --color-neutral-600: #525252;      /* Sehr dunkel Grau */
+    --color-neutral-700: #404040;      /* Dunkelgrau */
+    --color-neutral-800: #262626;      /* Sehr dunkles Grau */
+    --color-neutral-900: #171717;      /* Fast Schwarz */
+    
+    /* Semantische Farben */
+    --color-success: var(--color-secondary);
+    --color-warning: #f59e0b;
+    --color-error: var(--color-accent);
+    --color-info: var(--color-primary);
+    
+    /* Text-Farben */
+    --color-text-primary: var(--color-neutral-900);
+    --color-text-secondary: var(--color-neutral-600);
+    --color-text-muted: var(--color-neutral-400);
+    --color-text-inverse: var(--color-neutral-50);
+    
+    /* Hintergrund-Farben */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: var(--color-neutral-50);
+    --color-bg-tertiary: var(--color-neutral-100);
+    --color-bg-dark: var(--color-neutral-800);
+    
+    /* === Typografie === */
+    /* Schriftfamilien */
+    --font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-heading: 'Georgia', 'Times New Roman', serif;
+    --font-family-mono: 'Consolas', 'Monaco', 'Lucida Console', monospace;
+    
+    /* Schriftgrößen (Fluid Typography) */
+    --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);      /* 12-14px */
+    --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);        /* 14-16px */
+    --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);        /* 16-18px */
+    --font-size-md: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);       /* 18-20px */
+    --font-size-lg: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);        /* 20-24px */
+    --font-size-xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);              /* 24-32px */
+    --font-size-2xl: clamp(2rem, 1.7rem + 1.5vw, 2.5rem);           /* 32-40px */
+    --font-size-3xl: clamp(2.5rem, 2rem + 2.5vw, 3.5rem);           /* 40-56px */
+    
+    /* Schriftgewichte */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    
+    /* Zeilenhöhen */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    
+    /* === Abstände === */
+    /* Spacing Scale (basiert auf 0.25rem = 4px) */
+    --space-1: 0.25rem;     /* 4px */
+    --space-2: 0.5rem;      /* 8px */
+    --space-3: 0.75rem;     /* 12px */
+    --space-4: 1rem;        /* 16px */
+    --space-5: 1.25rem;     /* 20px */
+    --space-6: 1.5rem;      /* 24px */
+    --space-8: 2rem;        /* 32px */
+    --space-10: 2.5rem;     /* 40px */
+    --space-12: 3rem;       /* 48px */
+    --space-16: 4rem;       /* 64px */
+    --space-20: 5rem;       /* 80px */
+    --space-24: 6rem;       /* 96px */
+    --space-32: 8rem;       /* 128px */
+    
+    /* Container-Größen */
+    --container-sm: 640px;
+    --container-md: 768px;
+    --container-lg: 1024px;
+    --container-xl: 1280px;
+    --container-2xl: 1536px;
+    
+    /* === Schatten === */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    
+    /* === Rundungen === */
+    --radius-sm: 0.125rem;    /* 2px */
+    --radius-base: 0.25rem;   /* 4px */
+    --radius-md: 0.375rem;    /* 6px */
+    --radius-lg: 0.5rem;      /* 8px */
+    --radius-xl: 0.75rem;     /* 12px */
+    --radius-2xl: 1rem;       /* 16px */
+    --radius-full: 9999px;    /* Vollständig rund */
+    
+    /* === Übergänge === */
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 250ms ease-in-out;
+    --transition-slow: 350ms ease-in-out;
+    
+    /* Easing-Funktionen */
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* === Z-Index Skala === */
+    --z-behind: -1;
+    --z-auto: auto;
+    --z-base: 0;
+    --z-docked: 10;
+    --z-dropdown: 1000;
+    --z-sticky: 1100;
+    --z-banner: 1200;
+    --z-overlay: 1300;
+    --z-modal: 1400;
+    --z-popover: 1500;
+    --z-tooltip: 1600;
+    
+    /* === Kalender-spezifische Tokens === */
+    /* Türchen-Größen */
+    --calendar-door-size: clamp(60px, 12vw, 120px);
+    --calendar-door-gap: clamp(8px, 1.5vw, 16px);
+    
+    /* Stage-Farben */
+    --stage-1-color: var(--color-info);
+    --stage-2-color: var(--color-accent);
+    
+    /* Status-Farben für Türchen */
+    --door-locked: var(--color-neutral-300);
+    --door-available: var(--color-primary);
+    --door-solved: var(--color-success);
+    --door-current: var(--color-accent);
+    
+    /* === Responsive Breakpoints === */
+    --bp-xs: 475px;
+    --bp-sm: 640px;
+    --bp-md: 768px;
+    --bp-lg: 1024px;
+    --bp-xl: 1280px;
+    --bp-2xl: 1536px;
+    
+    /* === Spezielle Effekte === */
+    /* Glasmorphismus */
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-backdrop: blur(10px);
+    
+    /* Weihnachts-Glitzer-Effekt */
+    --sparkle-gold: #ffd700;
+    --sparkle-silver: #c0c0c0;
+}
+
+/* === Dark Mode Unterstützung === */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Invertierte Farben für Dark Mode */
+        --color-bg-primary: var(--color-neutral-900);
+        --color-bg-secondary: var(--color-neutral-800);
+        --color-bg-tertiary: var(--color-neutral-700);
+        --color-text-primary: var(--color-neutral-50);
+        --color-text-secondary: var(--color-neutral-300);
+        --color-text-muted: var(--color-neutral-400);
+        
+        /* Angepasste Schatten für Dark Mode */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+}
+
+/* === Reduzierte Motion Unterstützung === */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-fast: 0ms;
+        --transition-base: 0ms;
+        --transition-slow: 0ms;
+    }
+}
