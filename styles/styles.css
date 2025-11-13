@@ -798,6 +798,138 @@ body {
     }
 }
 
+/* === 🎵 Christmas Music Player === */
+.music-player {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-2) 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.music-player__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    gap: var(--space-4);
+}
+
+.music-player__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.music-player__btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.music-player__btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.music-player__btn:active {
+    transform: scale(0.95);
+}
+
+.music-player__icon {
+    font-size: 14px;
+}
+
+.music-player__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: white;
+}
+
+.music-player__track {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.music-player__status {
+    font-size: var(--font-size-xs);
+    opacity: 0.8;
+}
+
+.music-player__volume {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: white;
+}
+
+.music-player__volume-icon {
+    font-size: var(--font-size-sm);
+}
+
+.music-player__volume-slider {
+    width: 80px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+
+.music-player__volume-slider::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.music-player__volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+/* Responsive für kleinere Bildschirme */
+@media (max-width: 640px) {
+    .music-player__container {
+        padding: 0 var(--space-3);
+        gap: var(--space-2);
+    }
+    
+    .music-player__volume {
+        display: none; /* Verstecke Volume auf mobil */
+    }
+    
+    .music-player__info {
+        max-width: 150px;
+        overflow: hidden;
+    }
+    
+    .music-player__track {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
 /* === Print Styles === */
 @media print {
     .header,

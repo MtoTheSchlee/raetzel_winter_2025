@@ -52,6 +52,28 @@
     </div>
   </header>
 
+  <!-- 🎵 Christmas Music Player -->
+  <div class="music-player" id="christmas-music-player">
+    <div class="music-player__container">
+      <div class="music-player__controls">
+        <button class="music-player__btn music-player__btn--play" id="music-play" aria-label="Musik abspielen">
+          <span class="music-player__icon">▶️</span>
+        </button>
+        <button class="music-player__btn music-player__btn--pause" id="music-pause" aria-label="Musik pausieren" style="display: none;">
+          <span class="music-player__icon">⏸️</span>
+        </button>
+        <div class="music-player__info">
+          <span class="music-player__track" id="music-track-name">🎄 Weihnachtsmusik</span>
+          <span class="music-player__status" id="music-status">Bereit</span>
+        </div>
+      </div>
+      <div class="music-player__volume">
+        <span class="music-player__volume-icon">🔊</span>
+        <input type="range" class="music-player__volume-slider" id="music-volume" min="0" max="100" value="70" aria-label="Lautstärke">
+      </div>
+    </div>
+  </div>
+
   <!-- Hauptinhalt -->
   <main class="main" id="main">
     <!-- Hero -->
@@ -266,6 +288,7 @@
     <script src="./scripts/answer.util.js"></script>
     <script src="./scripts/modal.confirm.js"></script>
     <script src="./scripts/calendar.logic.js"></script>
+    <script src="./scripts/music.player.simple.js"></script>
     <script src="./scripts/main.js"></script>
 <script src="./scripts/app.logic.js"></script>
   </body>
