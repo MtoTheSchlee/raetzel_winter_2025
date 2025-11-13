@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Test Suite - Winter Rallye 2025</title>
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        connect-src 'self';
+        font-src 'self';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+    <link rel="stylesheet" href="../styles/tokens.css">
+    <link rel="stylesheet" href="../styles/utilities.css">
+    <style>
+        body {
+            font-family: var(--font-family-sans);
+            background: var(--color-background-primary);
+            color: var(--color-text-primary);
+            line-height: var(--line-height-base);
+            margin: 0;
+            padding: var(--space-4);
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, var(--color-primary-600), var(--color-accent-blue));
+            color: white;
+            padding: var(--space-6);
+            margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-6);
+            border-radius: var(--border-radius-md);
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: var(--color-background-card);
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: var(--space-4);
+            overflow: hidden;
+        }
+        
+        .test-section-header {
+            background: var(--color-neutral-50);
+            padding: var(--space-4);
+            border-bottom: 1px solid var(--color-border-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-section-content {
+            padding: var(--space-4);
+        }
+        
+        .test-case {
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--space-3);
+            padding: var(--space-3);
+            position: relative;
+        }
+        
+        .test-case.passed {
+            border-color: var(--color-success-300);
+            background: var(--color-success-50);
+        }
+        
+        .test-case.failed {
+            border-color: var(--color-error-300);
+            background: var(--color-error-50);
+        }
+        
+        .test-case.running {
+            border-color: var(--color-primary-300);
+            background: var(--color-primary-50);
+        }
+        
+        .test-status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--space-2);
+        }
+        
+        .test-status.passed { color: var(--color-success-700); }
+        .test-status.failed { color: var(--color-error-700); }
+        .test-status.running { color: var(--color-primary-700); }
+        
+        .test-description {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .test-details {
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-sm);
+            background: var(--color-neutral-100);
+            padding: var(--space-2);
+            border-radius: var(--border-radius-sm);
+            margin-top: var(--space-2);
+        }
+        
+        .test-error {
+            color: var(--color-error-700);
+            font-weight: var(--font-weight-medium);
+            margin-top: var(--space-2);
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--border-radius-md);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            border: none;
+            font-size: var(--font-size-base);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .btn-primary {
+            background: var(--color-primary-600);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--color-primary-700);
+        }
+        
+        .btn-success {
+            background: var(--color-success-600);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--color-error-600);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--color-neutral-200);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border-primary);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .test-summary {
+            background: var(--color-neutral-50);
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-4);
+            margin-top: var(--space-3);
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-number {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-1);
+        }
+        
+        .summary-number.passed { color: var(--color-success-600); }
+        .summary-number.failed { color: var(--color-error-600); }
+        .summary-number.total { color: var(--color-primary-600); }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--color-neutral-200);
+            border-radius: var(--border-radius-full);
+            overflow: hidden;
+            margin: var(--space-3) 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--color-primary-600);
+            transition: width 0.3s ease;
+            width: 0;
+        }
+        
+        .log-output {
+            background: #1a1a1a;
+            color: #f0f0f0;
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-sm);
+            padding: var(--space-3);
+            border-radius: var(--border-radius-md);
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: var(--space-3);
+        }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--color-neutral-300);
+            border-top: 2px solid var(--color-primary-600);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .config-section {
+            background: var(--color-primary-50);
+            border: 1px solid var(--color-primary-200);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-3);
+            margin-top: var(--space-3);
+        }
+        
+        .config-input {
+            padding: var(--space-2);
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-sm);
+            font-size: var(--font-size-sm);
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .test-controls {
+                flex-direction: column;
+            }
+            
+            .test-section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header class="test-header">
+            <h1>🧪 Self-Test Suite</h1>
+            <p>Automatisierte Tests für QR-Codes, Hash-Funktionen, Rate-Limiting und Zeit-Management</p>
+            <p><strong>Winter Rallye 2025</strong> - Qualitätssicherung</p>
+        </header>
+        
+        <div class="config-section">
+            <h3>🔧 Test-Konfiguration</h3>
+            <div class="config-grid">
+                <div>
+                    <label>Secret Key:</label>
+                    <input type="password" id="test-secret-key" class="config-input" placeholder="Test Secret Key">
+                </div>
+                <div>
+                    <label>Base URL:</label>
+                    <input type="url" id="test-base-url" class="config-input" value="https://winter-rallye-2025.haldensleben.de">
+                </div>
+                <div>
+                    <label>Rate Limit:</label>
+                    <input type="number" id="test-rate-limit" class="config-input" value="5" min="1" max="20">
+                </div>
+                <div>
+                    <label>Timeout (ms):</label>
+                    <input type="number" id="test-timeout" class="config-input" value="5000" min="1000" max="30000">
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-summary" id="test-summary">
+            <h3>📊 Test-Übersicht</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-number total" id="total-tests">0</div>
+                    <div>Gesamt</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number passed" id="passed-tests">0</div>
+                    <div>Bestanden</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number failed" id="failed-tests">0</div>
+                    <div>Fehlgeschlagen</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="duration">0s</div>
+                    <div>Dauer</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-controls">
+            <button class="btn btn-primary" id="run-all-tests">🚀 Alle Tests ausführen</button>
+            <button class="btn btn-success" id="run-security-tests">🔒 Security Tests</button>
+            <button class="btn btn-success" id="run-qr-tests">📱 QR Tests</button>
+            <button class="btn btn-success" id="run-time-tests">⏰ Zeit Tests</button>
+            <button class="btn btn-secondary" id="clear-results">🗑️ Ergebnisse löschen</button>
+            <button class="btn btn-secondary" id="export-report">📄 Report exportieren</button>
+        </div>
+        
+        <!-- Security Tests Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>🔒 Security & Hash Tests</h2>
+                <div class="test-status" id="security-status">⏱️ Wartend</div>
+            </div>
+            <div class="test-section-content" id="security-tests">
+                <!-- Test cases will be populated here -->
+            </div>
+        </div>
+        
+        <!-- QR Code Tests Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>📱 QR-Code Tests</h2>
+                <div class="test-status" id="qr-status">⏱️ Wartend</div>
+            </div>
+            <div class="test-section-content" id="qr-tests">
+                <!-- Test cases will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Rate Limiting Tests Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>🚦 Rate-Limiting Tests</h2>
+                <div class="test-status" id="rate-limit-status">⏱️ Wartend</div>
+            </div>
+            <div class="test-section-content" id="rate-limit-tests">
+                <!-- Test cases will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Time Management Tests Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>⏰ Zeit-Management Tests</h2>
+                <div class="test-status" id="time-status">⏱️ Wartend</div>
+            </div>
+            <div class="test-section-content" id="time-tests">
+                <!-- Test cases will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Calendar Logic Tests Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>📅 Kalender-Logik Tests</h2>
+                <div class="test-status" id="calendar-status">⏱️ Wartend</div>
+            </div>
+            <div class="test-section-content" id="calendar-tests">
+                <!-- Test cases will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Integration Tests Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>🔗 Integration Tests</h2>
+                <div class="test-status" id="integration-status">⏱️ Wartend</div>
+            </div>
+            <div class="test-section-content" id="integration-tests">
+                <!-- Test cases will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Test Log -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h2>📝 Test-Log</h2>
+                <button class="btn btn-secondary" id="clear-log">Log leeren</button>
+            </div>
+            <div class="test-section-content">
+                <div class="log-output" id="test-log"></div>
+            </div>
+        </div>
+        
+        <footer style="margin-top: var(--space-8); text-align: center; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+            <p>Winter Rallye 2025 - Self-Test Suite v1.0</p>
+            <p>Automatisierte Qualitätssicherung für alle App-Komponenten</p>
+        </footer>
+    </div>
+    
+    <script src="selftest.js"></script>
+</body>
+</html>

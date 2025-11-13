@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "day": 2,
+    "shop_name": "Küchenklaus",
+    "address": "Hagenstraße 49, 39340 Haldensleben"
+  },
+  "stage1": {
+    "title": "Wo die Küchen entstehen",
+    "teaser": "Heute führt dich das Rätsel zu einem Ort voller Kochfelder und Fronten.",
+    "riddle_html": "<p><strong>Hinweis:</strong> Hier werden Arbeitsplatten geplant, Geräte ausgesucht und Traumküchen Realität. Wie heißt das gesuchte Geschäft?</p>",
+    "answer_variants": [
+      "Küchenklaus",
+      "Kuechenklaus",
+      "Küchen Klaus",
+      "Kuechen Klaus",
+      "Küchen Klaus Haldensleben",
+      "Kuechen Klaus Haldensleben"
+    ]
+  }
+}

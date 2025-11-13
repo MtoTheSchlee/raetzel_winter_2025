@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR-Link Generator - Winter Rallye 2025</title>
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        connect-src 'self';
+        font-src 'self';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
+    <link rel="stylesheet" href="../styles/tokens.css">
+    <link rel="stylesheet" href="../styles/utilities.css">
+    <style>
+        body {
+            font-family: var(--font-family-sans);
+            background: var(--color-background-primary);
+            color: var(--color-text-primary);
+            line-height: var(--line-height-base);
+            margin: 0;
+            padding: var(--space-4);
+        }
+        
+        .admin-header {
+            background: var(--color-accent-red);
+            color: white;
+            padding: var(--space-4);
+            margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-6);
+            border-radius: var(--border-radius-md);
+        }
+        
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-section {
+            background: var(--color-background-card);
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-4);
+        }
+        
+        .form-group {
+            margin-bottom: var(--space-4);
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--space-2);
+            color: var(--color-text-primary);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: var(--space-3);
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-md);
+            font-size: var(--font-size-base);
+            background: var(--color-background-primary);
+            color: var(--color-text-primary);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary-500);
+            box-shadow: 0 0 0 3px var(--color-primary-100);
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 8px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: var(--space-10);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: var(--font-family-mono);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+            margin-top: var(--space-6);
+        }
+        
+        .btn {
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--border-radius-md);
+            font-weight: var(--font-weight-medium);
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-size: var(--font-size-base);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .btn-primary {
+            background: var(--color-primary-600);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--color-primary-700);
+        }
+        
+        .btn-success {
+            background: var(--color-success-600);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--color-error-600);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--color-neutral-200);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border-primary);
+        }
+        
+        .result-section {
+            background: var(--color-success-50);
+            border: 1px solid var(--color-success-200);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            display: none;
+        }
+        
+        .result-section.show {
+            display: block;
+        }
+        
+        .error-section {
+            background: var(--color-error-50);
+            border: 1px solid var(--color-error-200);
+            border-radius: var(--border-radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            display: none;
+        }
+        
+        .error-section.show {
+            display: block;
+        }
+        
+        .qr-preview {
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-4);
+            text-align: center;
+            background: white;
+        }
+        
+        .code-block {
+            background: var(--color-neutral-50);
+            border: 1px solid var(--color-border-primary);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-3);
+            font-family: var(--font-family-mono);
+            font-size: var(--font-size-sm);
+            white-space: pre-wrap;
+            overflow-x: auto;
+            margin: var(--space-3) 0;
+        }
+        
+        .info-box {
+            background: var(--color-primary-50);
+            border: 1px solid var(--color-primary-200);
+            border-radius: var(--border-radius-md);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .signature-details {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--space-2);
+            font-size: var(--font-size-sm);
+            margin-top: var(--space-3);
+        }
+        
+        .signature-label {
+            font-weight: var(--font-weight-medium);
+        }
+        
+        .signature-value {
+            font-family: var(--font-family-mono);
+            word-break: break-all;
+        }
+        
+        @media (max-width: 768px) {
+            .signature-details {
+                grid-template-columns: 1fr;
+                gap: var(--space-1);
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>🔧 QR-Link Generator</h1>
+            <p>Admin-Tool zur sicheren QR-Code-Generierung für die Winter Rallye 2025</p>
+        </header>
+        
+        <div class="info-box">
+            <h3>🔐 Sicherheitshinweise</h3>
+            <ul>
+                <li>Verwenden Sie dieses Tool nur in einer sicheren Umgebung</li>
+                <li>Der Secret Key sollte niemals öffentlich zugänglich sein</li>
+                <li>Generierte QR-Codes enthalten signierte Antworten für Offline-Verifikation</li>
+                <li>Signaturen basieren auf HMAC-SHA256 mit EC256-kompatiblem Format</li>
+            </ul>
+        </div>
+        
+        <form id="qr-form" class="form-section">
+            <h2>QR-Code Konfiguration</h2>
+            
+            <div class="form-group">
+                <label for="day" class="form-label">Tag (1-24):</label>
+                <input type="number" id="day" name="day" min="1" max="24" value="1" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="answer" class="form-label">Korrekte Antwort:</label>
+                <input type="text" id="answer" name="answer" class="form-input" placeholder="z.B. rathaus" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="stage" class="form-label">Stage:</label>
+                <select id="stage" name="stage" class="form-input form-select">
+                    <option value="1">Stage 1 (Tag 1-12)</option>
+                    <option value="2">Stage 2 (Tag 13-24)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="release-time" class="form-label">Freischaltzeit:</label>
+                <input type="datetime-local" id="release-time" name="releaseTime" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="secret-key" class="form-label">Secret Key (HMAC):</label>
+                <input type="password" id="secret-key" name="secretKey" class="form-input" placeholder="Geheimer Schlüssel für Signatur" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="base-url" class="form-label">Base URL:</label>
+                <input type="url" id="base-url" name="baseUrl" class="form-input" value="https://winter-rallye-2025.haldensleben.de" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="additional-data" class="form-label">Zusätzliche Daten (JSON):</label>
+                <textarea id="additional-data" name="additionalData" class="form-input form-textarea" placeholder='{"location": "rathaus", "points": 10}'></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">🔗 QR-Code generieren</button>
+                <button type="button" id="clear-form" class="btn btn-secondary">🗑️ Formular leeren</button>
+                <button type="button" id="test-signature" class="btn btn-success">🔍 Signatur testen</button>
+            </div>
+        </form>
+        
+        <div id="result-section" class="result-section">
+            <h3>✅ QR-Code erfolgreich generiert</h3>
+            
+            <div class="qr-preview" id="qr-preview">
+                <!-- QR Code wird hier eingefügt -->
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Generierte URL:</label>
+                <div class="code-block" id="generated-url"></div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Signatur Details:</label>
+                <div class="signature-details" id="signature-details">
+                    <!-- Signatur-Details werden hier eingefügt -->
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="copy-url" class="btn btn-primary">📋 URL kopieren</button>
+                <button type="button" id="download-qr" class="btn btn-success">💾 QR-Code herunterladen</button>
+                <button type="button" id="print-qr" class="btn btn-secondary">🖨️ Drucken</button>
+            </div>
+        </div>
+        
+        <div id="error-section" class="error-section">
+            <h3>❌ Fehler</h3>
+            <p id="error-message"></p>
+        </div>
+        
+        <div class="form-section">
+            <h2>📋 Batch-Generierung</h2>
+            <p>Generieren Sie QR-Codes für mehrere Tage gleichzeitig:</p>
+            
+            <div class="form-group">
+                <label for="batch-config" class="form-label">Batch-Konfiguration (JSON):</label>
+                <textarea id="batch-config" class="form-input form-textarea" placeholder='[
+  {"day": 1, "answer": "rathaus", "releaseTime": "2025-12-01T06:00:00+01:00"},
+  {"day": 2, "answer": "4", "releaseTime": "2025-12-02T06:00:00+01:00"}
+]'></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" id="generate-batch" class="btn btn-primary">🔄 Batch generieren</button>
+                <button type="button" id="download-batch" class="btn btn-success">💾 Alle herunterladen</button>
+            </div>
+            
+            <div id="batch-results" class="result-section">
+                <!-- Batch-Ergebnisse werden hier angezeigt -->
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>🔧 Utilities</h2>
+            
+            <div class="button-group">
+                <button type="button" id="validate-signature" class="btn btn-secondary">✓ Signatur validieren</button>
+                <button type="button" id="generate-secret" class="btn btn-secondary">🔑 Secret Key generieren</button>
+                <button type="button" id="export-config" class="btn btn-secondary">📤 Konfiguration exportieren</button>
+                <button type="button" id="import-config" class="btn btn-secondary">📥 Konfiguration importieren</button>
+            </div>
+            
+            <input type="file" id="config-file" accept=".json" style="display: none;">
+        </div>
+        
+        <footer style="margin-top: var(--space-8); text-align: center; color: var(--color-text-secondary); font-size: var(--font-size-sm);">
+            <p>Winter Rallye 2025 - QR-Link Generator v1.0</p>
+            <p>Nur für autorisierte Administrator*innen</p>
+        </footer>
+    </div>
+    
+    <script src="qr-linkgen.js"></script>
+</body>
+</html>

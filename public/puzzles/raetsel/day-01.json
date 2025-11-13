@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "day": 1,
+    "shop_name": "Augenoptik Schätzing",
+    "address": "Hagenstraße 15, 39340 Haldensleben"
+  },
+  "stage1": {
+    "title": "Scharfer Blick gesucht",
+    "teaser": "Heute geht es dorthin, wo dein Blick geschärft wird.",
+    "riddle_html": "<p><strong>Hinweis:</strong> Hier werden Brillen angepasst, Gläser geschliffen und du findest garantiert den passenden Durchblick. Wie heißt das gesuchte Geschäft?</p>",
+    "answer_variants": [
+      "Augenoptik Schätzing",
+      "Augenoptik Schaetzing",
+      "Optiker Schätzing",
+      "Optiker Schaetzing",
+      "Schätzing",
+      "Schaetzing"
+  ]
+},
+"stage2": {
+    "title": "Brillantes Rätsel",
+    "teaser": "Nun wird es richtig knifflig – zeig, dass du den Durchblick hast!",
+    "riddle_html": "<p><strong>Frage:</strong> Wie viele verschiedene Brillenmodelle sind im Schaufenster von Augenoptik Schätzing zu sehen?</p>",
+    "answer_variants": [
+      "5",
+      "fünf"
+    ]
+  },
+  "config": {
+    "stages": 2,
+    "points_per_stage": 10,
+    "total_points": 20,
+    "release_times": [
+      "2025-12-01T06:00:00+01:00",
+      "2025-12-01T12:00:00+01:00"
+    ],
+    "location": {
+      "name": "Augenoptik Schätzing",
+      "address": "Hagenstraße 15, 39340 Haldensleben",
+      "coordinates": {
+        "lat": 52.2938,
+        "lng": 11.4120
+      },
+      "radius": 25,
+      "description": "Fachgeschäft für Brillen und Kontaktlinsen in Haldensleben"
+    },
+    "security": {
+      "answerHashStage1": "d2d0714f014a9784047eaeccf956520045c45265c6f1b6f8f1a5a4c9e6e8d6f0",
+      "answerHashStage2": "3c363836cf4e16666669a25da280a1865c2d2874f3d4b7f6f5d5d5d5d5d5d5d5",
+      "validation": {
+        "caseSensitive": false,
+        "removeSpaces": true,
+        "allowTypos": false,
+        "numberOnlyStage2": true,
+        "rangeStage2": {
+          "min": 1,
+          "max": 10
+        }
+      }
+    }
+}
+}

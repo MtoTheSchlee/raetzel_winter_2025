@@ -1,0 +1,828 @@
+/**
+ * Hauptstyles für Rätsel Winter 2025
+ * Mobile-first, responsive Design für die Stadtrallye-Anwendung
+ */
+
+/* === Reset und Basis-Styles === */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px; /* Basis für rem-Einheiten */
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* === Layout-Container === */
+.container {
+    width: 100%;
+    max-width: var(--container-xl);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+}
+
+@media (min-width: 640px) {
+    .container {
+        padding: 0 var(--space-6);
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        padding: 0 var(--space-8);
+    }
+}
+
+/* === Header & Navigation === */
+.header {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: var(--color-text-inverse);
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    box-shadow: var(--shadow-md);
+}
+
+.header__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) 0;
+}
+
+.header__brand {
+    flex-grow: 1;
+}
+
+.header__title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space-1);
+    color: var(--color-text-inverse);
+}
+
+.header__subtitle {
+    font-size: var(--font-size-sm);
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: var(--font-weight-light);
+}
+
+/* Navigation */
+.nav-toggle {
+    display: block;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-fast);
+}
+
+.nav-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-toggle__line {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background-color: var(--color-text-inverse);
+    margin: 4px 0;
+    transition: var(--transition-fast);
+    border-radius: var(--radius-sm);
+}
+
+.nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--color-primary-dark);
+    list-style: none;
+    padding: var(--space-4);
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-lg);
+}
+
+.nav-menu.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-menu li {
+    margin-bottom: var(--space-2);
+}
+
+.nav-link {
+    display: block;
+    color: var(--color-text-inverse);
+    text-decoration: none;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    transition: background-color var(--transition-fast);
+    font-weight: var(--font-weight-medium);
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+}
+
+@media (min-width: 768px) {
+    .nav-toggle {
+        display: none;
+    }
+
+    .nav-menu {
+        position: static;
+        display: flex;
+        gap: var(--space-2);
+        background: none;
+        box-shadow: none;
+        padding: 0;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .nav-menu li {
+        margin-bottom: 0;
+    }
+}
+
+/* === Hero Section === */
+.hero {
+    background: linear-gradient(135deg, var(--color-bg-secondary), var(--color-bg-tertiary));
+    padding: var(--space-16) 0 var(--space-20);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(26, 75, 107, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(196, 30, 58, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.hero__content {
+    text-align: center;
+    position: relative;
+    z-index: var(--z-base);
+}
+
+.hero__title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    margin-bottom: var(--space-6);
+    line-height: var(--line-height-tight);
+}
+
+.hero__description {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-10);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: var(--line-height-relaxed);
+}
+
+.hero__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-6);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.stat {
+    text-align: center;
+    padding: var(--space-4);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-base);
+    border: 1px solid var(--color-neutral-200);
+}
+
+.stat__number {
+    display: block;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.stat__label {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-1);
+    font-weight: var(--font-weight-medium);
+}
+
+/* === Kalender-Section === */
+.calendar-section {
+    padding: var(--space-20) 0;
+    background-color: var(--color-bg-primary);
+}
+
+.section-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    text-align: center;
+    margin-bottom: var(--space-4);
+}
+
+.section-description {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-bottom: var(--space-12);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Kalender-Grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--calendar-door-size), 1fr));
+    gap: var(--calendar-door-gap);
+    margin-bottom: var(--space-12);
+    padding: var(--space-4);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Türchen */
+.calendar-door {
+    aspect-ratio: 1;
+    background-color: var(--door-locked);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--shadow-sm);
+}
+
+.calendar-door::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform var(--transition-slow);
+}
+
+.calendar-door:hover::before {
+    transform: translateX(100%);
+}
+
+.calendar-door__number {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-inverse);
+    margin-bottom: var(--space-1);
+}
+
+.calendar-door__icon {
+    font-size: var(--font-size-md);
+    opacity: 0.8;
+}
+
+/* Door States */
+.calendar-door--locked {
+    background-color: var(--door-locked);
+    cursor: not-allowed;
+}
+
+.calendar-door--locked .calendar-door__number {
+    color: var(--color-text-muted);
+}
+
+.calendar-door--available {
+    background: linear-gradient(135deg, var(--door-available), var(--color-primary-dark));
+    border-color: var(--color-primary-light);
+    transform: scale(1);
+}
+
+.calendar-door--available:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+.calendar-door--solved {
+    background: linear-gradient(135deg, var(--door-solved), var(--color-secondary-dark));
+    border-color: var(--color-secondary-light);
+}
+
+.calendar-door--current {
+    background: linear-gradient(135deg, var(--door-current), var(--color-accent-dark));
+    border-color: var(--color-accent-light);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* Stage Indikatoren */
+.stage-indicators {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+}
+
+.stage-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-xl);
+    border: 2px solid var(--color-neutral-200);
+}
+
+.stage-indicator__icon {
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+}
+
+.stage-indicator__text {
+    flex-grow: 1;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+}
+
+.stage-indicator__progress {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+}
+
+/* === Zeit-Section === */
+.time-section {
+    background-color: var(--color-bg-tertiary);
+    padding: var(--space-10) 0;
+}
+
+.time-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-6);
+    text-align: center;
+}
+
+.current-time,
+.next-puzzle {
+    padding: var(--space-6);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-base);
+    border: 1px solid var(--color-neutral-200);
+}
+
+.time-label {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2);
+    font-weight: var(--font-weight-medium);
+}
+
+.time-value {
+    display: block;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    font-family: var(--font-family-mono);
+}
+
+/* === Regeln-Section === */
+.rules-section {
+    padding: var(--space-20) 0;
+    background-color: var(--color-bg-primary);
+}
+
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-8);
+}
+
+.rule-card {
+    text-align: center;
+    padding: var(--space-8);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-base);
+    border: 1px solid var(--color-neutral-200);
+    transition: transform var(--transition-base);
+}
+
+.rule-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.rule-card__icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-4);
+    line-height: 1;
+}
+
+.rule-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+    margin-bottom: var(--space-4);
+}
+
+.rule-card__text {
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+/* === Fortschritt-Section === */
+.progress-section {
+    padding: var(--space-20) 0;
+    background-color: var(--color-bg-tertiary);
+}
+
+.progress-display {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.progress-bar {
+    position: relative;
+    height: 20px;
+    background-color: var(--color-neutral-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-8);
+    box-shadow: var(--shadow-inner);
+}
+
+.progress-bar__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    width: 0%;
+    transition: width var(--transition-slow);
+    border-radius: var(--radius-full);
+}
+
+.progress-bar__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+}
+
+.achievement-list {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.achievement {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--color-primary);
+}
+
+.achievement__icon {
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+}
+
+.achievement__text {
+    flex-grow: 1;
+    font-weight: var(--font-weight-medium);
+}
+
+/* === Footer === */
+.footer {
+    background-color: var(--color-neutral-800);
+    color: var(--color-text-inverse);
+    padding: var(--space-16) 0 var(--space-8);
+}
+
+.footer__content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
+}
+
+.footer__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-4);
+    color: var(--color-text-inverse);
+}
+
+.footer__text {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: var(--line-height-relaxed);
+}
+
+.footer__text a {
+    color: var(--color-accent-light);
+    text-decoration: none;
+}
+
+.footer__text a:hover {
+    text-decoration: underline;
+}
+
+.footer__bottom {
+    border-top: 1px solid var(--color-neutral-600);
+    padding-top: var(--space-6);
+    text-align: center;
+}
+
+.footer__copyright {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: var(--font-size-sm);
+}
+
+/* === Modals === */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: var(--z-modal);
+    display: none;
+}
+
+.modal.is-open {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+}
+
+.modal__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal__content {
+    position: relative;
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-2xl);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalEnter var(--transition-base);
+}
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-6) var(--space-6) var(--space-4);
+    border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.modal__title {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+}
+
+.modal__close {
+    background: none;
+    border: none;
+    font-size: var(--font-size-2xl);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.modal__close:hover {
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+}
+
+.modal__body {
+    padding: var(--space-6);
+}
+
+.modal__footer {
+    padding: var(--space-4) var(--space-6) var(--space-6);
+    border-top: 1px solid var(--color-neutral-200);
+}
+
+.modal__actions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: flex-end;
+}
+
+.modal--small .modal__content {
+    max-width: 400px;
+}
+
+/* === Buttons === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    white-space: nowrap;
+    min-height: 44px; /* Touch-friendly */
+}
+
+.btn:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.btn--primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+}
+
+.btn--primary:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn--secondary {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-color: var(--color-neutral-300);
+}
+
+.btn--secondary:hover {
+    background-color: var(--color-neutral-200);
+    border-color: var(--color-neutral-400);
+}
+
+.btn--accent {
+    background-color: var(--color-accent);
+    color: var(--color-text-inverse);
+}
+
+.btn--accent:hover {
+    background-color: var(--color-accent-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* === Responsive Design === */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 var(--space-3);
+    }
+    
+    .hero {
+        padding: var(--space-12) 0 var(--space-16);
+    }
+    
+    .hero__title {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .calendar-grid {
+        gap: var(--space-2);
+        padding: var(--space-3);
+    }
+    
+    .modal__content {
+        margin: var(--space-2);
+        border-radius: var(--radius-lg);
+    }
+    
+    .modal__actions {
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .calendar-door::before,
+    .calendar-door:hover::before {
+        transform: none;
+    }
+    
+    .modal__content {
+        animation: none;
+    }
+    
+    .calendar-door--current {
+        animation: none;
+    }
+}
+
+/* === Print Styles === */
+@media print {
+    .header,
+    .footer,
+    .modal,
+    .nav-toggle,
+    .btn {
+        display: none !important;
+    }
+    
+    .hero,
+    .calendar-section,
+    .rules-section {
+        padding: var(--space-4) 0 !important;
+        page-break-inside: avoid;
+    }
+    
+    .calendar-grid {
+        display: block !important;
+    }
+    
+    .calendar-door {
+        display: inline-block !important;
+        width: 60px !important;
+        height: 60px !important;
+        margin: var(--space-2) !important;
+    }
+}

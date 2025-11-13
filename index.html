@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Rätsel Winter 2025 - Winter-/Weihnachts-Stadtrallye Haldensleben">
+  <title>Rätsel Winter 2025 | Haldensleben</title>
+
+  <!-- Design & Layout -->
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/styles.css">
+  <link rel="stylesheet" href="styles/utilities.css">
+
+  <!-- Content Security Policy für erhöhte Sicherheit (keine Inline-Scripts, keine fremden Domains) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';">
+
+  <!-- Favicon & Meta -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="theme-color" content="#1a4b6b">
+
+  <!-- Preload wichtiger Skripte (Performance) -->
+  <link rel="preload" href="scripts/main.js" as="script">
+  <link rel="preload" href="scripts/calendar.logic.js" as="script">
+</head>
+<body>
+  <!-- Skip-Link für Screenreader / Tastatur -->
+  <a href="#main" class="skip-link">Zum Hauptinhalt springen</a>
+
+  <!-- Header mit Navigation -->
+  <header class="header" role="banner">
+    <div class="container">
+      <div class="header__content">
+        <div class="header__brand">
+          <h1 class="header__title">Rätsel Winter 2025</h1>
+          <p class="header__subtitle">Haldensleben Stadtrallye</p>
+        </div>
+        <nav class="header__nav" role="navigation" aria-label="Hauptnavigation">
+          <button class="nav-toggle" aria-label="Navigation umschalten" id="nav-toggle">
+            <span class="nav-toggle__line" aria-hidden="true"></span>
+            <span class="nav-toggle__line" aria-hidden="true"></span>
+            <span class="nav-toggle__line" aria-hidden="true"></span>
+          </button>
+          <ul class="nav-menu" id="nav-menu">
+            <li><a href="#calendar" class="nav-link">Kalender</a></li>
+            <li><a href="#rules" class="nav-link">Regeln</a></li>
+            <li><a href="#progress" class="nav-link">Fortschritt</a></li>
+            <li><a href="#info" class="nav-link">Info</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hauptinhalt -->
+  <main class="main" id="main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero__content">
+          <h2 class="hero__title">Willkommen zur Winter-Stadtrallye 2025</h2>
+          <p class="hero__description">
+            Entdecke Haldensleben im Winter! Löse täglich neue Rätsel und erkunde
+            deine Stadt auf eine ganz neue Art. Vom 1. bis 24. Dezember erwarten
+            dich spannende Aufgaben und versteckte Geheimnisse.
+          </p>
+          <div class="hero__stats" aria-label="Aktueller Rallye-Status">
+            <div class="stat">
+              <span class="stat__number" id="current-day">--</span>
+              <span class="stat__label">Aktueller Tag</span>
+            </div>
+            <div class="stat">
+              <span class="stat__number" id="solved-count">0</span>
+              <span class="stat__label">Gelöst</span>
+            </div>
+            <div class="stat">
+              <span class="stat__number" id="total-points">0</span>
+              <span class="stat__label">Punkte</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Adventskalender Sektion -->
+    <section class="calendar-section" id="calendar" aria-labelledby="calendar-title">
+      <div class="container">
+        <h2 class="section-title" id="calendar-title">Rätsel-Kalender</h2>
+        <p class="section-description">
+          Klicke auf die Türchen, um die täglichen Rätsel zu öffnen.
+          Jedes Rätsel ist ab dem jeweiligen Tag verfügbar.
+        </p>
+
+        <!-- Kalender Grid (wird per JS gefüllt) -->
+        <div class="calendar-grid" id="calendar-grid" aria-live="polite">
+          <!-- Türchen werden dynamisch durch calendar.logic.js generiert -->
+        </div>
+
+        <!-- Stage-Indikatoren -->
+        <div class="stage-indicators" aria-label="Fortschritt nach Stages">
+          <div class="stage-indicator" id="stage-1-indicator">
+            <span class="stage-indicator__icon" aria-hidden="true">🎯</span>
+            <span class="stage-indicator__text">Stage 1: Entdeckung (Tag 1–12)</span>
+            <span class="stage-indicator__progress" id="stage-1-progress">0/12</span>
+          </div>
+          <div class="stage-indicator" id="stage-2-indicator">
+            <span class="stage-indicator__icon" aria-hidden="true">🏆</span>
+            <span class="stage-indicator__text">Stage 2: Meisterschaft (Tag 13–24)</span>
+            <span class="stage-indicator__progress" id="stage-2-progress">0/12</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Zeit & Countdown -->
+    <section class="time-section" aria-labelledby="time-title">
+      <div class="container">
+        <h2 class="sr-only" id="time-title">Zeitinformationen</h2>
+        <div class="time-display">
+          <div class="current-time">
+            <span class="time-label">Aktuelle Zeit (Berlin):</span>
+            <span class="time-value" id="current-time">--:--</span>
+          </div>
+          <div class="next-puzzle">
+            <span class="time-label">Nächstes Rätsel in:</span>
+            <span class="time-value" id="countdown">--:--:--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spielregeln -->
+    <section class="rules-section" id="rules" aria-labelledby="rules-title">
+      <div class="container">
+        <h2 class="section-title" id="rules-title">Spielregeln</h2>
+        <div class="rules-grid">
+          <article class="rule-card">
+            <div class="rule-card__icon" aria-hidden="true">📅</div>
+            <h3 class="rule-card__title">Täglich neue Rätsel</h3>
+            <p class="rule-card__text">
+              Jeden Tag ab 6:00 Uhr wird ein neues Rätsel freigeschaltet.
+              Du kannst verpasste Rätsel jederzeit nachholen.
+            </p>
+          </article>
+          <article class="rule-card">
+            <div class="rule-card__icon" aria-hidden="true">📱</div>
+            <h3 class="rule-card__title">QR-Codes scannen</h3>
+            <p class="rule-card__text">
+              Finde die QR-Codes an den beschriebenen Orten und scanne sie
+              mit deinem Smartphone, um die Antworten zu überprüfen.
+            </p>
+          </article>
+          <article class="rule-card">
+            <div class="rule-card__icon" aria-hidden="true">🏃</div>
+            <h3 class="rule-card__title">Erkunde die Stadt</h3>
+            <p class="rule-card__text">
+              Die Rätsel führen dich zu interessanten Orten in Haldensleben.
+              Nimm dir Zeit, um deine Stadt neu zu entdecken.
+            </p>
+          </article>
+          <article class="rule-card">
+            <div class="rule-card__icon" aria-hidden="true">🎁</div>
+            <h3 class="rule-card__title">Sammele Punkte</h3>
+            <p class="rule-card__text">
+              Für jedes gelöste Rätsel erhältst du Punkte. Stage-2-Rätsel
+              (ab Tag 13) bringen mehr Punkte als Stage 1.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fortschritt -->
+    <section class="progress-section" id="progress" aria-labelledby="progress-title">
+      <div class="container">
+        <h2 class="section-title" id="progress-title">Dein Fortschritt</h2>
+        <div class="progress-display">
+          <div class="progress-bar" aria-label="Gesamtfortschritt">
+            <div class="progress-bar__fill" id="progress-fill"></div>
+            <span class="progress-bar__text" id="progress-text">0%</span>
+          </div>
+          <div class="achievement-list" id="achievement-list" aria-live="polite">
+            <!-- Achievements werden dynamisch geladen -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" id="info">
+    <div class="container">
+      <div class="footer__content">
+        <section class="footer__section" aria-label="Über das Projekt">
+          <h3 class="footer__title">Über das Projekt</h3>
+          <p class="footer__text">
+            Eine Initiative zur Förderung der lokalen Entdeckung und
+            des Gemeinschaftsgefühls in Haldensleben.
+          </p>
+        </section>
+        <section class="footer__section" aria-label="Technische Hinweise">
+          <h3 class="footer__title">Technische Hinweise</h3>
+          <p class="footer__text">
+            Diese Webseite verwendet moderne Sicherheitsstandards und
+            läuft vollständig ohne externe Server-Backends.
+          </p>
+        </section>
+        <section class="footer__section" aria-label="Support">
+          <h3 class="footer__title">Support</h3>
+          <p class="footer__text">
+            Bei technischen Problemen wende dich an den Administrator
+            oder nutze das <a href="tests/selftest.html">Selbsttest-Tool</a>.
+          </p>
+        </section>
+      </div>
+      <div class="footer__bottom">
+        <p class="footer__copyright">
+          &copy; 2025 Rätsel Winter Haldensleben. Alle Rechte vorbehalten.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Rätsel-Modal -->
+  <div class="modal" id="puzzle-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal__overlay"></div>
+    <div class="modal__content">
+      <header class="modal__header">
+        <h2 class="modal__title" id="modal-title">Rätsel laden...</h2>
+        <button class="modal__close" id="modal-close" aria-label="Schließen">×</button>
+      </header>
+      <div class="modal__body" id="modal-body">
+        <!-- Rätsel-Inhalt wird hier dynamisch geladen -->
+      </div>
+      <footer class="modal__footer">
+        <div class="modal__actions" id="modal-actions">
+          <!-- Action-Buttons werden je nach Rätsel-Status generiert -->
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Bestätigungs-Modal -->
+  <div class="modal modal--small" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-message" aria-hidden="true">
+    <div class="modal__overlay"></div>
+    <div class="modal__content">
+      <div class="modal__body">
+        <p class="confirm-message" id="confirm-message">Aktion bestätigen?</p>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--secondary" id="confirm-cancel">Abbrechen</button>
+        <button class="btn btn--primary" id="confirm-ok">Bestätigen</button>
+      </div>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="noscript-warning">
+      Für die Winter-Rallye werden JavaScript-Funktionen benötigt. Bitte JavaScript im Browser aktivieren.
+    </div>
+  </noscript>
+
+     <!-- JavaScript (einfaches, stabiles Setup) -->
+    <script src="scripts/security.static.js"></script>
+    <script src="scripts/time.berlin.js"></script>
+    <script src="scripts/answer.util.js"></script>
+    <script src="scripts/modal.confirm.js"></script>
+    <script src="scripts/calendar.logic.js"></script>
+    <script src="scripts/main.js"></script>
+  </body>
+</html>
