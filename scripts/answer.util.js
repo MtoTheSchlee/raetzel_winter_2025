@@ -13,6 +13,8 @@ class AnswerUtil {
         this.isInitialized = false;
         this.answerCache = new Map();
         this.submissionHistory = [];
+        this.musicPlayer = null; // Music Integration v3.7
+        this.smartLogic = null; // Smart Logic Engine v3.7
         
         // Konfiguration für Antwort-Verarbeitung
         this.config = {
@@ -39,12 +41,22 @@ class AnswerUtil {
                 iterations: 1000
             },
             
-            // Scoring
+            // Scoring (Enhanced v3.7)
             scoring: {
                 basePoints: 10,
                 stage2Multiplier: 2,
                 timeBonus: true,
-                maxTimeBonus: 5
+                maxTimeBonus: 5,
+                consecutiveBonus: true, // Neue Funktion
+                hintPenalty: 2, // Punktabzug für Hinweise
+                musicMoodBonus: 1 // Christmas Spirit Bonus
+            },
+            
+            // Music Integration v3.7
+            audio: {
+                playSuccessSounds: true,
+                playErrorSounds: true,
+                adaptiveVolume: true
             },
             
             // Cache-Einstellungen
@@ -72,8 +84,17 @@ class AnswerUtil {
      */
     async init() {
         try {
-            console.log('💬 Answer-Utility wird initialisiert...');
+            console.log('💬 Answer-Utility v3.7 wird initialisiert...');
             
+            // Music Player Integration
+            if (window.ChristmasMusicPlayer && this.config.audio.playSuccessSounds) {
+                this.musicPlayer = new window.ChristmasMusicPlayer();
+                console.log('🎵 Music Player in Answer Utility integriert');
+            }
+
+            // Smart Logic Engine initialisieren 
+            this.initSmartLogic();
+
             // Lade gespeicherte History
             this.loadSubmissionHistory();
 
@@ -84,7 +105,7 @@ class AnswerUtil {
             await this.testHashFunctions();
 
             this.isInitialized = true;
-            console.log('✅ Answer-Utility initialisiert');
+            console.log('✅ Answer-Utility v3.7 erfolgreich initialisiert');
 
         } catch (error) {
             console.error('❌ Fehler bei Answer-Utility-Initialisierung:', error);
@@ -609,10 +630,130 @@ class AnswerUtil {
             cacheEntries: this.answerCache.size,
             submissionHistory: this.submissionHistory.length,
             stats: this.getSubmissionStats(),
-            config: this.config
+            config: this.config,
+            smartLogic: this.smartLogic?.getStatus() || null,
+            musicIntegration: !!this.musicPlayer
+        };
+    }
+
+    /**
+     * Smart Logic Engine Initialisierung (v3.7)
+     */
+    initSmartLogic() {
+        this.smartLogic = {
+            patterns: new Map(),
+            userBehavior: {
+                attemptTiming: [],
+                errorPatterns: [],
+                successMethods: []
+            },
+            adaptiveHints: new Map(),
+
+            // Lernalgorithmus für Benutzerverhalten
+            analyzePattern(answer, result) {
+                const pattern = {
+                    length: answer.length,
+                    hasNumbers: /\d/.test(answer),
+                    hasSpecialChars: /[^a-zA-Z0-9\s]/.test(answer),
+                    complexity: this.calculateComplexity(answer),
+                    timestamp: Date.now()
+                };
+
+                if (result.correct) {
+                    this.userBehavior.successMethods.push(pattern);
+                } else {
+                    this.userBehavior.errorPatterns.push(pattern);
+                }
+
+                // Adaptive Hinweise generieren
+                this.generateAdaptiveHints(pattern, result);
+            },
+
+            calculateComplexity(answer) {
+                let complexity = answer.length;
+                if (/[A-Z]/.test(answer)) complexity += 2;
+                if (/[0-9]/.test(answer)) complexity += 3;
+                if (/[^a-zA-Z0-9]/.test(answer)) complexity += 5;
+                return Math.min(complexity, 50);
+            },
+
+            generateAdaptiveHints(pattern, result) {
+                if (!result.correct && pattern.complexity < 5) {
+                    this.adaptiveHints.set('simple', 'Versuche eine längere oder komplexere Antwort');
+                } else if (!result.correct && pattern.hasNumbers && !pattern.hasSpecialChars) {
+                    this.adaptiveHints.set('format', 'Achte auf Sonderzeichen oder Groß-/Kleinschreibung');
+                }
+            },
+
+            getStatus() {
+                return {
+                    patterns: this.patterns.size,
+                    successMethods: this.userBehavior.successMethods.length,
+                    errorPatterns: this.userBehavior.errorPatterns.length,
+                    adaptiveHints: Array.from(this.adaptiveHints.keys())
+                };
+            }
+        };
+    }
+
+    /**
+     * Music Feedback Integration (v3.7) 
+     */
+    playAnswerFeedback(isCorrect, achievement = null) {
+        if (!this.musicPlayer || !this.config.audio.playSuccessSounds) return;
+
+        try {
+            if (isCorrect) {
+                if (achievement === 'stage_complete') {
+                    this.musicPlayer.playChristmasEffect('stage_complete');
+                } else {
+                    this.musicPlayer.playChristmasEffect('puzzle_success');
+                }
+            } else {
+                // Sanfter Error-Sound (kein Schrecken zur Weihnachtszeit)
+                console.log('🔔 Falscher Versuch - weiter probieren!');
+            }
+        } catch (error) {
+            console.error('Music feedback error:', error);
+        }
+    }
+
+    /**
+     * Enhanced Answer Processing mit Music & Smart Logic (v3.7)
+     */
+    async processAnswerEnhanced(rawAnswer, puzzleData) {
+        const result = await this.processAnswer(rawAnswer, puzzleData);
+        
+        // Smart Logic Analysis
+        if (this.smartLogic) {
+            this.smartLogic.analyzePattern(rawAnswer, result);
+        }
+
+        // Music Feedback
+        let achievement = null;
+        if (result.correct && puzzleData.isLastOfStage) {
+            achievement = 'stage_complete';
+        }
+        
+        this.playAnswerFeedback(result.correct, achievement);
+
+        // Enhanced Result mit Smart Features
+        return {
+            ...result,
+            smartHints: this.smartLogic?.adaptiveHints ? 
+                Array.from(this.smartLogic.adaptiveHints.entries()) : [],
+            userProgress: this.smartLogic?.userBehavior || null,
+            musicPlayed: !!this.musicPlayer
         };
     }
 }
+
+// Export für Modulverwendung
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = AnswerUtil;
+}
+
+console.log('💬 AnswerUtil v3.7 mit Smart Logic & Music Integration geladen');
 
 // Globale Instanz erstellen
 const answerUtil = new AnswerUtil();

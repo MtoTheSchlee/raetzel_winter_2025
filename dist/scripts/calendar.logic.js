@@ -13,6 +13,7 @@ class CalendarLogic {
         this.puzzles = new Map();
         this.calendarGrid = null;
         this.isInitialized = false;
+        this.musicPlayer = null; // Music Player Integration
         
         // Konfiguration
         this.config = {
@@ -20,7 +21,8 @@ class CalendarLogic {
             stage1Days: 12, // Tag 1-12
             stage2Days: 12, // Tag 13-24
             puzzleBaseUrl: 'public/puzzles/raetsel/',
-            releaseTime: { hour: 6, minute: 0 } // 6:00 Uhr morgens
+            releaseTime: { hour: 6, minute: 0 }, // 6:00 Uhr morgens
+            musicEnabled: true // Music Integration
         };
 
         // Cache für geladene Rätsel
@@ -37,6 +39,13 @@ class CalendarLogic {
             this.calendarGrid = document.getElementById('calendar-grid');
             if (!this.calendarGrid) {
                 throw new Error('Kalender-Grid Element nicht gefunden');
+            }
+
+            // Music Player Integration
+            if (this.config.musicEnabled && window.ChristmasMusicPlayer) {
+                this.musicPlayer = new window.ChristmasMusicPlayer();
+                await this.musicPlayer.init();
+                console.log('🎵 Music Player in Kalender integriert');
             }
 
             // Generiere Kalender-HTML

@@ -11,8 +11,7 @@
     "test:coverage": "vitest run --coverage",
     "serve": "python3 -m http.server 8001",
     "dev": "python3 -m http.server 8001",
-
-    "build": "mkdir -p dist/scripts && cp scripts/security.static.min.js dist/scripts/ && cp scripts/security.static.min.js.map dist/scripts/ && cp index.html dist/index.html && echo '✅ Build complete: $(date)'"
+    "build": "mkdir -p dist && cp -r index.html styles scripts music dist/"
   },
   "keywords": [],
   "author": "",

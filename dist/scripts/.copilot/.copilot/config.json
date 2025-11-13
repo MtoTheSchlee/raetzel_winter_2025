@@ -1,0 +1,71 @@
+  {
+    "version": "3.0",
+  "name": "SecurityStatic v3.0 – Full Automation (Build, Deploy, CI/CD, Audit)",
+  "description": "Vollautomatisierte Einrichtung, Tests, Deployment, Monitoring und Security-Audits für das SecurityStatic-Projekt.",
+  "goals": [
+    "✅ 1. Projektinitialisierung prüfen und Setup aktualisieren:",
+    "   - Stelle sicher, dass package.json existiert, sonst führe 'npm init -y' aus.",
+    "   - Installiere alle notwendigen Abhängigkeiten ('vitest', 'c8').",
+    "   - Füge test- und coverage-Scripts in package.json ein.",
+    "",
+    "✅ 2. Production Build erzeugen:",
+    "   - Erstelle Ordner 'dist/scripts' falls nicht vorhanden.",
+    "   - Kopiere security.static.min.js & .map in dist/scripts.",
+    "   - Berechne automatisch SHA384-Integrität.",
+    "   - Erstelle 'dist/index.html' mit korrektem <script> Tag, integrity und crossorigin.",
+    "",
+    "✅ 3. CI/CD & Monitoring Workflows:",
+    "   - Erstelle '.github/workflows/build.yml' für Tests & Builds.",
+    "   - Erstelle '.github/workflows/monitor.yml' für tägliche Audits (Cron 0 0 * * *).",
+    "   - Integriere npm audit, npm outdated, npm run test:coverage.",
+    "",
+    "✅ 4. Reports & Dokumentation:",
+    "   - Erstelle 'reports/security_audit.json', 'reports/security_summary.md', 'reports/dependency_status.md', 'reports/coverage_trend.md'.",
+    "   - Generiere 'docs/securityStatic_v2.4.md' mit Featureliste, Benchmarks und Sicherheitsbeschreibung.",
+    "",
+    "✅ 5. GitOps (Tagging, Commit, Push):",
+    "   - Erstelle Commit mit Nachricht '🚀 SecurityStatic v3.0 – Full Automation Setup ✅'.",
+    "   - Setze Git-Tag 'v3.0' mit Featurebeschreibung.",
+    "   - Push main & Tags zu origin.",
+    "",
+    "✅ 6. Auto-Validation:",
+    "   - Führe Tests (npm test) und Coverage (npm run test:coverage) aus.",
+    "   - Falls alle Tests bestehen, markiere Deployment als Production Ready."
+  ],
+  "style": {
+    "code": {
+      "language": "bash+yaml+markdown+html",
+      "commentStyle": "inline"
+    },
+    "tone": "professional",
+    "clarity": "high",
+    "comments": "Alle generierten Dateien enthalten Zeitstempel, Commit-ID und Jason v3.0 Signatur."
+  },
+  "output": {
+    "files": [
+      { "path": "dist/index.html", "createIfMissing": true },
+      { "path": "dist/scripts/security.static.min.js", "updateExisting": true },
+      { "path": ".github/workflows/build.yml", "createIfMissing": true },
+      { "path": ".github/workflows/monitor.yml", "createIfMissing": true },
+      { "path": "docs/securityStatic_v2.4.md", "createIfMissing": true },
+      { "path": "reports/security_audit.json", "createIfMissing": true },
+      { "path": "reports/security_summary.md", "createIfMissing": true },
+      { "path": "reports/dependency_status.md", "createIfMissing": true },
+      { "path": "reports/coverage_trend.md", "createIfMissing": true }
+    ],
+    "autoReplaceExisting": true,
+    "ensureTestsPass": true
+  },
+  "postRun": [
+    "npm ci",
+    "npm run test",
+    "npm run test:coverage",
+    "npm audit --json > reports/security_audit.json",
+    "npm outdated --json > reports/outdated_dependencies.json",
+    "git add .",
+    "git commit -m '🚀 SecurityStatic v3.0 – Full Automation Setup ✅'",
+    "git tag -a v3.0 -m 'SecurityStatic v3.0 – Full Automation (Build, Deploy, CI/CD, Audit)'",
+    "git push origin main",
+    "git push origin v3.0"
+  ]
+}
