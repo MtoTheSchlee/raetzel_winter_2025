@@ -1,5 +1,4 @@
-# Deploy to GitHub Pages - SecurityStatic v3.3 (fixed validated YAML)
-
+# SecurityStatic v3.3 - GitHub Pages Deploy (validated, works with GitHub DE)
 name: Deploy to GitHub Pages
 
 on:
@@ -84,7 +83,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
+    
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -93,5 +92,4 @@ jobs:
       - name: Deployment Success
         run: |
           echo "SecurityStatic v3.3 successfully deployed"
-          echo "Live URL: ${{ steps.deployment.outputs.page_url }}"
           echo "Deployed on: $(date)"
