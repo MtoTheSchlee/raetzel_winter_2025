@@ -48,9 +48,42 @@ class SecurityStatic {
   async init() {
     if (this.isInitialized) return;
     this.initializeSession();
+    this.ensureUserKey();
     this.startCleanupInterval();
     this.isInitialized = true;
     console.log('✅ SecurityStatic initialisiert');
+  }
+
+  /**
+   * Ensures a persistent user key exists for this device/browser
+   */
+  ensureUserKey() {
+    const userKeyStorage = 'wr_user_key';
+    let userKey = localStorage.getItem(userKeyStorage);
+    
+    if (!userKey || userKey.length < 16) {
+      // Generate new 16-character user key
+      userKey = this.generateUserKey();
+      localStorage.setItem(userKeyStorage, userKey);
+      console.log('🔑 Neuer User-Key generiert:', userKey.substring(0, 4) + '...');
+    }
+    
+    // Make globally available
+    window.WR_USER_KEY = userKey;
+    return userKey;
+  }
+
+  /**
+   * Generates a 16-character user key (a-z, 0-9)
+   * @returns {string} User key
+   */
+  generateUserKey() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 16; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   }
 
   // --- Session Management ----------------------------------------------------
@@ -250,6 +283,17 @@ class SecurityStatic {
 
 // Global instance for immediate use
 window.SecurityStatic = new SecurityStatic();
+
+// Configuration for Stage-2 answer submission and server endpoints
+window.WR_ANSWER_CFG = {
+  submitEndpoint: '', // 'https://example.com/api/answers' - leave empty for localStorage-only mode
+  timeoutMs: 8000,
+  enableLocalBackup: true,
+  maxRetries: 2,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+};
 
 // Export for module environments  
 if (typeof module !== 'undefined' && module.exports) {

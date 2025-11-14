@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage-2 Küchenklaus Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-link {
+            display: block;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .test-link:hover {
+            background: #0056b3;
+        }
+        .status {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🏪 Küchenklaus Stage-2 Test</h1>
+    <p><strong>Test-Links für das Stage-2 Plasmafilter-Rätsel</strong></p>
+
+    <div class="status" id="status">
+        ⏳ System wird getestet...
+    </div>
+
+    <a href="/?day=2&stage=2&qr=test" class="test-link" target="_blank">
+        🔍 Test Stage-2 QR-Code (Tag 2)
+    </a>
+    
+    <a href="/stage2-test.html" class="test-link" target="_blank">
+        🧪 Entwickler Test-Seite
+    </a>
+
+    <a href="/" class="test-link" target="_blank">
+        📅 Haupt-App (ohne Parameter)
+    </a>
+
+    <h2>📋 Erwartetes Verhalten:</h2>
+    <ol>
+        <li><strong>QR-Link klicken</strong> → Stage-2 Modal öffnet sich</li>
+        <li><strong>Küchenklaus-Hinweise anzeigen</strong> → Suche Kochinsel, finde Plasmafilter</li>
+        <li><strong>Eingabefeld ausfüllen:</strong> "Plasmafilter" oder "plasma-filter"</li>
+        <li><strong>Submit klicken</strong> → Erfolgs-Meldung: "Stark! Du hast das Rätsel bei Küchenklaus gelöst..."</li>
+        <li><strong>LocalStorage prüfen:</strong> <code>wr_stage2_answers</code> sollte die Antwort enthalten</li>
+    </ol>
+
+    <h2>🔍 Debug-Info:</h2>
+    <div id="debug-info" style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+        Wird geladen...
+    </div>
+
+    <script>
+        // Test System-Status
+        function checkSystemStatus() {
+            const status = document.getElementById('status');
+            const debug = document.getElementById('debug-info');
+            
+            let debugInfo = [];
+            debugInfo.push('URL: ' + window.location.href);
+            debugInfo.push('Zeit: ' + new Date().toISOString());
+            
+            // Prüfe ob Scripts geladen sind
+            const scripts = ['WR_TIME', 'AnswersStore', 'CalendarLogic', 'WinterRallyeApp'];
+            let allLoaded = true;
+            
+            scripts.forEach(script => {
+                const available = window[script] ? '✅' : '❌';
+                debugInfo.push(script + ': ' + available);
+                if (!window[script]) allLoaded = false;
+            });
+            
+            // Test JSON-Zugriff
+            fetch('/public/puzzles/raetsel/day-02.json')
+                .then(response => {
+                    debugInfo.push('JSON-Zugriff: ' + (response.ok ? '✅' : '❌ ' + response.status));
+                    return response.json();
+                })
+                .then(data => {
+                    const hasStage2 = data.stage2 && data.stage2.answer_meta ? '✅' : '❌';
+                    debugInfo.push('Stage-2 Daten: ' + hasStage2);
+                    
+                    if (data.stage2?.answer_meta) {
+                        debugInfo.push('Akzeptierte Antworten: ' + data.stage2.answer_meta.accepted.join(', '));
+                    }
+                    
+                    // Update Status
+                    if (allLoaded && data.stage2) {
+                        status.textContent = '✅ System bereit! Alle Komponenten geladen.';
+                        status.className = 'status success';
+                    } else {
+                        status.textContent = '⚠️ System teilweise bereit. Prüfe Debug-Info.';
+                        status.className = 'status';
+                    }
+                    
+                    debug.innerHTML = debugInfo.join('\\n');
+                })
+                .catch(error => {
+                    debugInfo.push('JSON-Fehler: ❌ ' + error.message);
+                    status.textContent = '❌ System-Fehler beim Laden der Daten.';
+                    status.className = 'status error';
+                    debug.innerHTML = debugInfo.join('\\n');
+                });
+        }
+        
+        // Check LocalStorage for saved answers
+        function checkLocalStorage() {
+            try {
+                const keys = Object.keys(localStorage).filter(key => 
+                    key.includes('stage2') || key.includes('wr_') || key.includes('winter')
+                );
+                
+                if (keys.length > 0) {
+                    console.log('📋 LocalStorage Stage-2 Daten gefunden:');
+                    keys.forEach(key => {
+                        console.log(`  ${key}:`, localStorage.getItem(key));
+                    });
+                } else {
+                    console.log('📋 Keine Stage-2 Daten in LocalStorage.');
+                }
+            } catch (error) {
+                console.error('❌ LocalStorage Fehler:', error);
+            }
+        }
+        
+        // URL-Parameter anzeigen
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('day') || params.has('stage')) {
+            document.body.insertAdjacentHTML('afterbegin', 
+                `<div class="status">
+                    📋 URL-Parameter: day=${params.get('day')}, stage=${params.get('stage')}, qr=${params.get('qr')}
+                </div>`
+            );
+        }
+        
+        // Starte Tests
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSystemStatus();
+            checkLocalStorage();
+            
+            // Aktualisiere alle 5 Sekunden
+            setInterval(checkLocalStorage, 5000);
+        });
+    </script>
+</body>
+</html>

@@ -478,6 +478,55 @@
     opacity: 1 !important;
 }
 
+/* === Info Box Components === */
+.info-section--userkey {
+    margin: var(--space-8) 0;
+}
+
+.info-box {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-border);
+    background-color: var(--color-bg-secondary);
+    box-shadow: var(--shadow-md);
+}
+
+.info-box--warning {
+    border-color: var(--color-warning);
+    background-color: var(--color-warning-light);
+    color: var(--color-text);
+}
+
+.info-box__title {
+    margin: 0 0 var(--space-4) 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-warning-dark);
+}
+
+.info-text {
+    margin: 0 0 var(--space-3) 0;
+    line-height: var(--line-height-relaxed);
+}
+
+.info-text--small {
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
+}
+
+.info-text:last-child {
+    margin-bottom: 0;
+}
+
+.info-text code {
+    background: var(--color-bg);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    border: 1px solid var(--color-border);
+}
+
 /* === Print Utilities === */
 @media print {
     .print\:hidden { display: none !important; }

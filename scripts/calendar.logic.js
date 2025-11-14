@@ -378,10 +378,13 @@ class CalendarLogic {
      * Überprüft ob ein Rätsel verfügbar ist
      */
     isPuzzleAvailable(day, currentDecemberDay) {
-        // Rätsel ist verfügbar wenn:
-        // 1. Es Dezember ist UND der Tag erreicht/überschritten ist
-        // 2. ODER es nach Dezember ist (alle Rätsel verfügbar)
+        // Verwende neue WR_TIME API falls verfügbar
+        if (window.WR_TIME && typeof window.WR_TIME.isDoorUnlocked === 'function') {
+            const now = window.WR_TIME.getBerlinNow();
+            return window.WR_TIME.isDoorUnlocked(day, now);
+        }
         
+        // Fallback: Alte Logik
         if (!currentDecemberDay) {
             // Nicht im Dezember
             const now = new Date();
@@ -579,6 +582,231 @@ class CalendarLogic {
             stage2: progress.stage2,
             completionRate: (solvedPuzzles / totalPuzzles) * 100
         };
+    }
+
+    /**
+     * Rendert die Stage-2 Hinweisansicht in einem Modal
+     * @param {number} day - Tag des Rätsels (1-24)
+     * @param {Object} puzzle - Puzzle-Objekt mit stage2 Daten
+     * @param {Object} options - Optionen wie { fromQr: true, sessionId: string }
+     * @returns {boolean} True wenn erfolgreich gerendert
+     */
+    renderStage2HintView(day, puzzle, options = {}) {
+        try {
+            console.log(`🎯 Render Stage-2 Hinweisansicht für Tag ${day}:`, puzzle);
+
+            // Validierung
+            if (!puzzle?.stage2) {
+                console.error('❌ Keine Stage-2 Daten im Puzzle gefunden');
+                return false;
+            }
+
+            const stage2 = puzzle.stage2;
+
+            // Überprüfe ob Antwort-Eingabe erlaubt ist
+            if (!stage2.answer_enabled) {
+                console.log('⚠️ Antwort-Eingabe für Stage-2 nicht aktiviert');
+                this.showStage2InfoOnly(day, stage2, options);
+                return true;
+            }
+
+            // Finde Modal-Element
+            const modal = document.getElementById('puzzle-modal');
+            if (!modal) {
+                console.error('❌ #puzzle-modal Element nicht gefunden');
+                return false;
+            }
+
+            // Setze Modal-Titel
+            const modalTitle = modal.querySelector('.modal__title, h2, .puzzle-title');
+            if (modalTitle) {
+                modalTitle.textContent = stage2.headline || `Rätsel Tag ${day} - Nur im Geschäft lösbar`;
+            }
+
+            // Erstelle Modal-Body
+            const modalBody = modal.querySelector('.modal__body, .puzzle-content, .content');
+            if (modalBody) {
+                modalBody.innerHTML = this.createStage2ModalContent(day, stage2, options);
+            }
+
+            // Erstelle Modal-Footer
+            const modalFooter = modal.querySelector('.modal__footer, .puzzle-actions, .actions');
+            if (modalFooter) {
+                modalFooter.innerHTML = this.createStage2ModalFooter(day, options);
+            }
+
+            // Event-Handler für Stage-2 Buttons
+            this.attachStage2EventHandlers(day, puzzle, options);
+
+            // Zeige Modal
+            this.showModal(modal);
+
+            // Tracking: Stage-2 Start
+            if (window.AnswersStore && options.sessionId) {
+                const sessionInfo = window.AnswersStore.trackStage2Start(day, puzzle.meta || {}, options.qrContext || {});
+                if (sessionInfo) {
+                    modal.setAttribute('data-stage2-session', sessionInfo.sessionId);
+                    console.log('⏱️ Stage-2 Zeit-Tracking gestartet:', sessionInfo);
+                }
+            }
+
+            console.log('✅ Stage-2 Hinweisansicht erfolgreich gerendert');
+            return true;
+
+        } catch (error) {
+            console.error('❌ Fehler beim Rendern der Stage-2 Ansicht:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Erstellt den Inhalt für das Stage-2 Modal
+     * @param {number} day - Tag des Rätsels
+     * @param {Object} stage2 - Stage-2 Konfiguration
+     * @param {Object} options - Render-Optionen
+     * @returns {string} HTML-String
+     */
+    createStage2ModalContent(day, stage2, options) {
+        const qrInfo = options.fromQr ? '<div class="stage2-qr-info">🔓 <strong>QR-Code erfolgreich gescannt!</strong> Du kannst jetzt das Rätsel lösen.</div>' : '';
+        
+        return `
+            ${qrInfo}
+            
+            <div class="stage2-hints">
+                ${stage2.hint_html || '<p>Hinweise werden geladen...</p>'}
+            </div>
+            
+            <div class="stage2-answer-section">
+                <label for="stage2-answer" class="stage2-answer-label">
+                    <strong>Deine Antwort:</strong>
+                </label>
+                <input 
+                    type="text" 
+                    id="stage2-answer" 
+                    class="stage2-answer-input"
+                    placeholder="Gib hier deine Lösung ein..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    data-day="${day}"
+                />
+                <div class="stage2-answer-info">
+                    💡 <em>Deine Antwort wird für die große Verlosung gespeichert!</em>
+                </div>
+            </div>
+            
+            <div class="stage2-tracking-info">
+                ⏱️ Zeit läuft seit dem Öffnen dieser Seite...
+            </div>
+        `;
+    }
+
+    /**
+     * Erstellt die Footer-Buttons für das Stage-2 Modal
+     * @param {number} day - Tag des Rätsels
+     * @param {Object} options - Render-Optionen
+     * @returns {string} HTML-String
+     */
+    createStage2ModalFooter(day, options) {
+        return `
+            <button type="button" class="btn btn-secondary" data-action="close-modal">
+                Abbrechen
+            </button>
+            <button 
+                type="button" 
+                class="btn btn-primary stage2-submit-btn" 
+                data-action="submit-stage2-answer"
+                data-day="${day}"
+            >
+                Antwort abgeben
+            </button>
+        `;
+    }
+
+    /**
+     * Zeigt nur Stage-2 Informationen ohne Antwort-Eingabe
+     * @param {number} day - Tag des Rätsels
+     * @param {Object} stage2 - Stage-2 Konfiguration  
+     * @param {Object} options - Render-Optionen
+     */
+    showStage2InfoOnly(day, stage2, options) {
+        // Nutze existing Modal oder erstelle einfache Alert
+        if (window.ModalConfirm && typeof window.ModalConfirm.show === 'function') {
+            window.ModalConfirm.show({
+                title: stage2.headline || `Tag ${day} - Nur im Geschäft lösbar`,
+                message: `
+                    <div class="stage2-info-only">
+                        ${stage2.hint_html || '<p>Hinweise sind verfügbar.</p>'}
+                        <br>
+                        <strong>Hinweis:</strong> Für dieses Rätsel ist noch keine Antwort-Eingabe aktiviert.
+                    </div>
+                `,
+                confirmText: 'OK',
+                showCancel: false
+            });
+        } else {
+            alert(`Tag ${day}: ${stage2.headline || 'Nur im Geschäft lösbar'}`);
+        }
+    }
+
+    /**
+     * Attachiert Event-Handler für Stage-2 Modal
+     * @param {number} day - Tag des Rätsels
+     * @param {Object} puzzle - Puzzle-Objekt
+     * @param {Object} options - Render-Optionen
+     */
+    attachStage2EventHandlers(day, puzzle, options) {
+        // Submit Button Handler wird in main.js über das data-action System behandelt
+        // Hier nur zusätzliche Handler falls nötig
+        
+        // Enter-Taste im Input-Feld
+        const answerInput = document.getElementById('stage2-answer');
+        if (answerInput) {
+            answerInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const submitBtn = document.querySelector('.stage2-submit-btn');
+                    if (submitBtn) {
+                        submitBtn.click();
+                    }
+                }
+            });
+
+            // Auto-Focus
+            setTimeout(() => answerInput.focus(), 100);
+        }
+    }
+
+    /**
+     * Zeigt ein Modal an
+     * @param {Element} modal - Modal-Element
+     */
+    showModal(modal) {
+        if (modal) {
+            modal.style.display = 'block';
+            modal.classList.add('show', 'modal-visible');
+            document.body.classList.add('modal-open');
+            
+            // Focus-Management
+            const firstFocusable = modal.querySelector('input, button, [tabindex]:not([tabindex="-1"])');
+            if (firstFocusable) {
+                setTimeout(() => firstFocusable.focus(), 100);
+            }
+        }
+    }
+
+    /**
+     * Schließt ein Modal
+     * @param {Element} modal - Modal-Element
+     */
+    closeModal(modal) {
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show', 'modal-visible');
+            document.body.classList.remove('modal-open');
+            
+            // Cleanup Stage-2 Session Data
+            modal.removeAttribute('data-stage2-session');
+        }
     }
 }
 

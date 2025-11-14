@@ -8,6 +8,17 @@
     "title": "Wo die Küchen entstehen",
     "teaser": "Heute führt dich das Rätsel zu einem Ort voller Kochfelder und Fronten.",
     "riddle_html": "<p><strong>Hinweis:</strong> Hier werden Arbeitsplatten geplant, Geräte ausgesucht und Traumküchen Realität. Wie heißt das gesuchte Geschäft?</p>",
+    "answer_meta": {
+      "type": "text",
+      "normalize": "lowercase, trim, collapse-spaces, replace-ä->ae, replace-ü->ue",
+      "accepted": [
+        "kuechenklaus",
+        "kuechen klaus",
+        "kuechenklaus haldensleben"
+      ],
+      "success_message": "Richtig! Du hast das gesuchte Geschäft gefunden: Küchenklaus. Geh jetzt zur Kochinsel und scanne dort den nächsten QR-Code, um die Hinweise für das Tagesrätsel zu bekommen.",
+      "error_message": "Das ist nicht das gesuchte Geschäft. Schau dir nochmal den Hinweis an - wo werden Küchen geplant?"
+    },
     "answer_variants": [
       "Küchenklaus",
       "Kuechenklaus",
@@ -16,5 +27,22 @@
       "Küchen Klaus Haldensleben",
       "Kuechen Klaus Haldensleben"
     ]
+  },
+  "stage2": {
+    "headline": "Hinweise im Küchenstudio – Tagesrätsel",
+    "intro": "Du bist jetzt direkt bei Küchenklaus in der Hagenstraße 49. Hier findest du alle Hinweise, um das heutige Rätsel zu lösen.",
+    "hint_html": "<p><strong>So findest du die Lösung:</strong></p><ol><li><strong>Suche die Kochinsel:</strong> Schau dir die Kochinseln mit Dunstabzug genau an. An einer Insel findest du ein Schild zum Thema Luftreinigung – dort steht eine besondere Technik beschrieben.</li><li><strong>Achte auf moderne Technik:</strong> Diese Technik arbeitet nicht nur mit Fettfiltern, sondern nutzt elektrische Felder, um Gerüche und Fettpartikel aus der Luft zu holen. Sie wird in hochwertigen Hauben eingesetzt und sorgt für besonders saubere Luft.</li><li><strong>Lies den Produktnamen:</strong> In der Nähe der Haube oder auf einem Hinweisschild findest du den Begriff, den wir suchen. Tipp: Er verbindet Physik mit Küchenplanung.</li></ol><p><em>Frage:</em> Wie heißt das Bauteil, das in Dunstabzugshauben die Luft mit Hilfe von elektrischen Feldern reinigt?</p>",
+    "answer_enabled": true,
+    "answer_meta": {
+      "type": "text",
+      "normalize": "lowercase, trim, collapse-spaces, replace-ä->ae",
+      "accepted": [
+        "plasmafilter",
+        "plasma-filter",
+        "plasma filter"
+      ],
+      "success_message": "Stark! Du hast das Rätsel bei Küchenklaus gelöst. Deine Antwort wurde gespeichert – sie zählt für die Auslosung nach dem 24.12.",
+      "error_message": "Diese Eingabe stimmt noch nicht. Schau dich im Laden noch einmal in Ruhe um – der gesuchte Begriff steht auf einem Schild in der Nähe der Haube."
+    }
   }
 }

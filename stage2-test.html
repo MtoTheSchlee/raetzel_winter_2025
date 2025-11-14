@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage-2 QR System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .stage2-qr-info {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .stage2-hints {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .stage2-answer-section {
+            margin: 20px 0;
+        }
+        .stage2-answer-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .stage2-answer-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .stage2-answer-input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .stage2-answer-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .stage2-tracking-info {
+            background: #e2e3e5;
+            border-left: 4px solid #6c757d;
+            padding: 10px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-primary:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            padding: 20px 20px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-title {
+            margin: 0;
+            font-size: 24px;
+        }
+        .modal-body {
+            padding: 20px;
+        }
+        .modal-footer {
+            padding: 10px 20px 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            display: none;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            display: none;
+        }
+        .test-log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .qr-simulation {
+            background: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .qr-url {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            word-break: break-all;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Stage-2 QR System Test</h1>
+    <p><strong>Winter-Rallye 2025 - Stage-2 Hinweis-System mit QR-Code Integration</strong></p>
+
+    <!-- Test Messages -->
+    <div id="success-message" class="success-message"></div>
+    <div id="error-message" class="error-message"></div>
+
+    <!-- QR-Code Simulation -->
+    <div class="test-section">
+        <h3>🔍 QR-Code Simulation - Küchenklaus Rätsel</h3>
+        <div class="qr-simulation">
+            <p><strong>Simuliere QR-Code Aufruf für Küchenklaus (Tag 2):</strong></p>
+            <div class="qr-url" id="qr-url">
+                https://winter-rallye.de?day=2&stage=2&qr=eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.kuechenklaus...
+            </div>
+            <button class="btn btn-primary" onclick="simulateQRScan()">🔍 QR-Code scannen (Küchenklaus)</button>
+            <button class="btn btn-secondary" onclick="testNormalPuzzle()">📅 Normal öffnen (ohne QR)</button>
+            <p><em>💡 Das echte Rätsel: Finde den Plasmafilter bei Küchenklaus!</em></p>
+        </div>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="test-section">
+        <h3>🎮 Test-Steuerung</h3>
+        <button class="btn btn-primary" onclick="testAnswersStore()">AnswersStore testen</button>
+        <button class="btn btn-primary" onclick="testKuechenklausAnswer()">🏪 Küchenklaus Antworten testen</button>
+        <button class="btn btn-primary" onclick="testTimeTracking()">Zeit-Tracking testen</button>
+        <button class="btn btn-secondary" onclick="clearTestData()">Test-Daten löschen</button>
+        <button class="btn btn-secondary" onclick="showTestLog()">Log anzeigen</button>
+    </div>
+
+    <!-- Test Modal -->
+    <div id="puzzle-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Test Modal</h2>
+            </div>
+            <div class="modal-body">
+                <p>Modal wird durch Stage-2 System gefüllt...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="close-modal">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Log -->
+    <div class="test-section">
+        <h3>📋 Test-Log</h3>
+        <div id="test-log" class="test-log">
+            Test-Log wird hier angezeigt...
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="scripts/security.static.js"></script>
+    <script src="scripts/time.berlin.js"></script>
+    <script src="scripts/answers.store.js"></script>
+    <script src="scripts/calendar.logic.js"></script>
+    <script src="scripts/main.js"></script>
+
+    <script>
+        // Test Configuration - Küchenklaus Plasmafilter
+        const TEST_CONFIG = {
+            testDay: 2,
+            mockQRToken: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.kuechenklaus_plasmafilter',
+            testAnswers: {
+                correct: ['plasmafilter', 'plasma-filter', 'Plasmafilter', 'PLASMA-FILTER'],
+                incorrect: ['filter', 'luftfilter', 'plasma', 'dunstabzug', 'plasmafläche']
+            }
+        };
+
+        // Test Log Manager
+        let testLog = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            testLog.push(`[${timestamp}] ${message}`);
+            updateLogDisplay();
+            console.log('TEST:', message);
+        }
+
+        function updateLogDisplay() {
+            const logElement = document.getElementById('test-log');
+            if (logElement) {
+                logElement.innerHTML = testLog.slice(-50).join('\n');
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        function showMessage(message, type = 'success') {
+            const element = document.getElementById(`${type}-message`);
+            if (element) {
+                element.textContent = message;
+                element.style.display = 'block';
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Mock QR Verification Module
+        window.QRVerify = {
+            async verifyToken(token, context) {
+                log(`QR-Token Verifikation: ${token.substr(0, 20)}... für Tag ${context.day}`);
+                
+                // Simuliere Verifikation
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                return {
+                    valid: true,
+                    day: context.day,
+                    stage: context.stage,
+                    timestamp: new Date().toISOString(),
+                    metadata: { source: 'test-qr' }
+                };
+            }
+        };
+
+        // Mock Calendar Logic mit Test-Daten
+        window.CalendarLogic = class extends CalendarLogic {
+            getPuzzleData(day) {
+                log(`Lade Puzzle-Daten für Tag ${day}`);
+                
+                // Echte Küchenklaus-Daten für Tag 2
+                if (day === 2) {
+                    return {
+                        day,
+                        meta: {
+                            title: "Küchenklaus Plasmafilter-Rätsel",
+                            difficulty: 'medium',
+                            location: 'Küchenklaus, Hagenstraße 49'
+                        },
+                        stage1: {
+                            available: true,
+                            content: 'Stage-1 Kalender-Rätsel...'
+                        },
+                        stage2: {
+                            headline: "Hinweise im Küchenstudio – Tagesrätsel",
+                            intro: "Du bist jetzt direkt bei Küchenklaus in der Hagenstraße 49. Hier findest du alle Hinweise, um das heutige Rätsel zu lösen.",
+                            hint_html: `
+                                <p><strong>So findest du die Lösung:</strong></p>
+                                <ol>
+                                    <li><strong>Suche die Kochinsel:</strong> Schau dir die Kochinseln mit Dunstabzug genau an. An einer Insel findest du ein Schild zum Thema Luftreinigung – dort steht eine besondere Technik beschrieben.</li>
+                                    <li><strong>Achte auf moderne Technik:</strong> Diese Technik arbeitet nicht nur mit Fettfiltern, sondern nutzt elektrische Felder, um Gerüche und Fettpartikel aus der Luft zu holen. Sie wird in hochwertigen Hauben eingesetzt und sorgt für besonders saubere Luft.</li>
+                                    <li><strong>Lies den Produktnamen:</strong> In der Nähe der Haube oder auf einem Hinweisschild findest du den Begriff, den wir suchen. Tipp: Er verbindet Physik mit Küchenplanung.</li>
+                                </ol>
+                                <p><em>Frage:</em> Wie heißt das Bauteil, das in Dunstabzugshauben die Luft mit Hilfe von elektrischen Feldern reinigt?</p>
+                            `,
+                            answer_enabled: true,
+                            answer_meta: {
+                                type: "text",
+                                normalize: "lowercase, trim, collapse-spaces, replace-ä->ae",
+                                accepted: [
+                                    "plasmafilter",
+                                    "plasma-filter"
+                                ],
+                                success_message: "Stark! Du hast das Rätsel bei Küchenklaus gelöst. Deine Antwort wurde gespeichert – sie zählt für die Auslosung nach dem 24.12.",
+                                error_message: "Diese Eingabe stimmt noch nicht. Schau dich im Laden noch einmal in Ruhe um – der gesuchte Begriff steht auf einem Schild in der Nähe der Haube."
+                            }
+                        }
+                    };
+                }
+                
+                // Fallback für andere Tage
+                return {
+                    day,
+                    meta: {
+                        title: `Rätsel Tag ${day}`,
+                        difficulty: 'medium'
+                    },
+                    stage1: {
+                        available: true,
+                        content: 'Stage-1 Inhalt...'
+                    },
+                    stage2: {
+                        headline: `🎄 Tag ${day} - Nur im Geschäft lösbar`,
+                        hint_html: `
+                            <h4>🎯 Dein Hinweis:</h4>
+                            <p>Finde den roten Weihnachtsmann im Geschäft und zähle die goldenen Sterne um ihn herum.</p>
+                            <p><em>Multipliziere die Anzahl mit 7 und addiere 13.</em></p>
+                            <hr>
+                            <p><strong>Beispiel:</strong> 3 Sterne → 3 × 7 + 13 = 34</p>
+                        `,
+                        answer_enabled: true
+                    }
+                };
+            }
+        };
+
+        // Test Functions
+        async function simulateQRScan() {
+            log('🔍 Simuliere QR-Code Scan...');
+            
+            try {
+                // Update URL to simulate QR scan
+                const testUrl = `${window.location.origin}${window.location.pathname}?day=${TEST_CONFIG.testDay}&stage=2&qr=${TEST_CONFIG.mockQRToken}`;
+                
+                // Update QR URL display
+                document.getElementById('qr-url').textContent = testUrl;
+                
+                // Simulate QR processing
+                if (window.WinterRallyeApp && window.WinterRallyeApp.handleStage2QRCode) {
+                    await window.WinterRallyeApp.handleStage2QRCode(TEST_CONFIG.testDay, TEST_CONFIG.mockQRToken);
+                    showMessage('QR-Code erfolgreich verarbeitet! Modal sollte geöffnet werden.');
+                } else {
+                    log('❌ WinterRallyeApp nicht verfügbar');
+                    showMessage('WinterRallyeApp nicht geladen', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ QR-Scan Fehler: ${error.message}`);
+                showMessage(`QR-Scan Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        function testNormalPuzzle() {
+            log('🎁 Öffne normales Puzzle...');
+            
+            if (window.WinterRallyeApp && window.WinterRallyeApp.openPuzzle) {
+                window.WinterRallyeApp.openPuzzle(TEST_CONFIG.testDay);
+                showMessage('Normales Puzzle geöffnet');
+            } else {
+                showMessage('WinterRallyeApp nicht verfügbar', 'error');
+            }
+        }
+
+        async function testAnswersStore() {
+            log('💾 Teste AnswersStore...');
+            
+            try {
+                if (!window.AnswersStore) {
+                    throw new Error('AnswersStore nicht verfügbar');
+                }
+
+                // Test Session-Start
+                const sessionInfo = window.AnswersStore.trackStage2Start(TEST_CONFIG.testDay, { test: true }, { fromTest: true });
+                log(`Session gestartet: ${sessionInfo.sessionId}`);
+
+                // Warte kurz
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Test Answer-Submit mit korrekter Antwort
+                const result = await window.AnswersStore.submitStage2Answer(TEST_CONFIG.testDay, 'plasmafilter', sessionInfo.sessionId);
+                log(`Antwort eingereicht: ${JSON.stringify(result)}`);
+
+                showMessage('AnswersStore erfolgreich getestet!');
+                
+            } catch (error) {
+                log(`❌ AnswersStore Test Fehler: ${error.message}`);
+                showMessage(`AnswersStore Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        async function testKuechenklausAnswer() {
+            log('🏪 Teste Küchenklaus Antwort-Normalisierung...');
+            
+            try {
+                if (!window.AnswersStore) {
+                    throw new Error('AnswersStore nicht verfügbar');
+                }
+
+                // Session starten
+                const sessionInfo = window.AnswersStore.trackStage2Start(TEST_CONFIG.testDay, { location: 'Küchenklaus' }, { fromTest: true });
+                log(`Küchenklaus Session: ${sessionInfo.sessionId}`);
+
+                // Teste verschiedene Antwort-Varianten
+                log('📝 Teste korrekte Antworten:');
+                for (const answer of TEST_CONFIG.testAnswers.correct) {
+                    try {
+                        const result = await window.AnswersStore.submitStage2Answer(TEST_CONFIG.testDay, answer, `${sessionInfo.sessionId}_${answer}`);
+                        log(`  ✅ "${answer}" → ${result.success ? 'AKZEPTIERT' : 'ABGELEHNT'}`);
+                        
+                        // Kurze Pause zwischen Tests
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (e) {
+                        log(`  ❌ "${answer}" → FEHLER: ${e.message}`);
+                    }
+                }
+
+                log('📝 Teste falsche Antworten:');
+                for (const answer of TEST_CONFIG.testAnswers.incorrect) {
+                    try {
+                        const result = await window.AnswersStore.submitStage2Answer(TEST_CONFIG.testDay, answer, `${sessionInfo.sessionId}_wrong_${answer}`);
+                        log(`  ⚠️ "${answer}" → ${result.success ? 'IRRTÜMLICH AKZEPTIERT' : 'KORREKT ABGELEHNT'}`);
+                        
+                        // Kurze Pause zwischen Tests
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    } catch (e) {
+                        log(`  ❌ "${answer}" → FEHLER: ${e.message}`);
+                    }
+                }
+
+                showMessage('Küchenklaus Antwort-Tests abgeschlossen! Prüfe das Log für Details.');
+                
+            } catch (error) {
+                log(`❌ Küchenklaus Test Fehler: ${error.message}`);
+                showMessage(`Küchenklaus Test Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        function testTimeTracking() {
+            log('⏱️ Teste Zeit-Tracking...');
+            
+            try {
+                if (window.WR_TIME) {
+                    const berlinTime = window.WR_TIME.getBerlinNow();
+                    const isUnlocked = window.WR_TIME.isDoorUnlocked(TEST_CONFIG.testDay);
+                    
+                    log(`Berlin Zeit: ${berlinTime.toLocaleString()}`);
+                    log(`Tag ${TEST_CONFIG.testDay} freigeschaltet: ${isUnlocked}`);
+                    
+                    showMessage('Zeit-Tracking getestet!');
+                } else {
+                    throw new Error('WR_TIME nicht verfügbar');
+                }
+                
+            } catch (error) {
+                log(`❌ Zeit-Tracking Fehler: ${error.message}`);
+                showMessage(`Zeit-Tracking Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        function clearTestData() {
+            log('🧹 Lösche Test-Daten...');
+            
+            try {
+                // Clear localStorage test data
+                Object.keys(localStorage).forEach(key => {
+                    if (key.includes('stage2') || key.includes('test') || key.includes('wr_')) {
+                        localStorage.removeItem(key);
+                        log(`Gelöscht: ${key}`);
+                    }
+                });
+                
+                showMessage('Test-Daten gelöscht!');
+                
+            } catch (error) {
+                log(`❌ Fehler beim Löschen: ${error.message}`);
+                showMessage(`Lösch-Fehler: ${error.message}`, 'error');
+            }
+        }
+
+        function showTestLog() {
+            const logElement = document.getElementById('test-log');
+            if (logElement.style.display === 'none') {
+                logElement.style.display = 'block';
+                logElement.style.maxHeight = '600px';
+            } else {
+                logElement.style.display = 'none';
+            }
+        }
+
+        // Event Listeners für Modal
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            
+            if (target.matches('[data-action="close-modal"]')) {
+                const modal = document.getElementById('puzzle-modal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    log('Modal geschlossen');
+                }
+            }
+            
+            if (target.matches('[data-action="submit-stage2-answer"]')) {
+                log('Stage-2 Submit-Button geklickt');
+                // Wird vom main.js System behandelt
+            }
+        });
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Stage-2 Test-Seite geladen');
+            log('Verfügbare Module:');
+            log(`- WR_TIME: ${!!window.WR_TIME}`);
+            log(`- AnswersStore: ${!!window.AnswersStore}`);
+            log(`- CalendarLogic: ${!!window.CalendarLogic}`);
+            log(`- WinterRallyeApp: ${!!window.WinterRallyeApp}`);
+            log(`- QRVerify: ${!!window.QRVerify}`);
+            
+            showMessage('Test-Umgebung bereit! Nutze die Buttons zum Testen.');
+        });
+    </script>
+</body>
+</html>

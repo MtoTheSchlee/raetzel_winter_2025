@@ -56,6 +56,9 @@ class WinterRallyeApp {
             // Initialer UI-Update
             this.updateUI();
 
+            // Starte Kalender und Zeit-System
+            this.initCalendarAndTime();
+
             // Starte Timer-Updates
             this.startPeriodicUpdates();
 
@@ -141,19 +144,28 @@ class WinterRallyeApp {
             { name: 'qrVerify', instance: window.QRVerify, required: true },
             { name: 'answerUtil', instance: window.AnswerUtil, required: true },
             { name: 'modalConfirm', instance: window.ModalConfirm, required: false },
-            { name: 'tracking', instance: window.TrackingAdapter, required: false }
+            { name: 'tracking', instance: window.TrackingAdapter, required: false },
+            { name: 'extendedMusic', instance: window.ExtendedChristmasMusicPlayer, required: false }
         ];
 
         for (const config of moduleConfigs) {
             try {
                 if (config.instance) {
-                    // Initialisiere das Modul falls es eine init-Methode hat
-                    if (typeof config.instance.init === 'function') {
-                        await config.instance.init();
+                    // Spezielle Behandlung für Extended Music Player
+                    if (config.name === 'extendedMusic') {
+                        // Erstelle Instanz des erweiterten Music Players
+                        window.extendedChristmasMusic = new config.instance();
+                        this.modules.set(config.name, window.extendedChristmasMusic);
+                        console.log(`🎵 Extended Christmas Music Player initialisiert`);
+                    } else {
+                        // Initialisiere das Modul falls es eine init-Methode hat
+                        if (typeof config.instance.init === 'function') {
+                            await config.instance.init();
+                        }
+                        
+                        this.modules.set(config.name, config.instance);
+                        console.log(`✅ Modul ${config.name} initialisiert`);
                     }
-                    
-                    this.modules.set(config.name, config.instance);
-                    console.log(`✅ Modul ${config.name} initialisiert`);
                 } else if (config.required) {
                     throw new Error(`Erforderliches Modul ${config.name} nicht gefunden`);
                 } else {
@@ -200,11 +212,30 @@ class WinterRallyeApp {
         
         if (navToggle && navMenu) {
             navToggle.addEventListener('click', () => {
-                navMenu.classList.toggle('is-open');
+                navMenu.classList.toggle('nav-menu--open');
                 
                 // ARIA für Accessibility
-                const isOpen = navMenu.classList.contains('is-open');
+                const isOpen = navMenu.classList.contains('nav-menu--open');
                 navToggle.setAttribute('aria-expanded', isOpen.toString());
+            });
+        }
+
+        // Top-Bar Music Toggle
+        const musicToggle = document.getElementById('music-toggle');
+        if (musicToggle) {
+            musicToggle.addEventListener('click', () => {
+                // Trigger für erweiterten Musikplayer
+                if (window.extendedChristmasMusic) {
+                    if (window.extendedChristmasMusic.isPlaying) {
+                        window.extendedChristmasMusic.pause();
+                        musicToggle.textContent = 'Musik abspielen';
+                    } else {
+                        window.extendedChristmasMusic.play();
+                        musicToggle.textContent = 'Musik pausieren';
+                    }
+                } else {
+                    console.log('🎵 Erweiteter Musikplayer noch nicht initialisiert');
+                }
             });
         }
 
@@ -222,8 +253,8 @@ class WinterRallyeApp {
                     });
 
                     // Schließe mobile Navigation
-                    if (navMenu && navMenu.classList.contains('is-open')) {
-                        navMenu.classList.remove('is-open');
+                    if (navMenu && navMenu.classList.contains('nav-menu--open')) {
+                        navMenu.classList.remove('nav-menu--open');
                         navToggle.setAttribute('aria-expanded', 'false');
                     }
                 }
@@ -308,11 +339,17 @@ class WinterRallyeApp {
                 case 'submit-answer':
                     await this.submitAnswer(payload);
                     break;
+                case 'submit-stage2-answer':
+                    await this.submitStage2Answer(payload, event);
+                    break;
                 case 'show-hint':
                     this.showHint(payload);
                     break;
                 case 'reset-progress':
                     this.confirmResetProgress();
+                    break;
+                case 'close-modal':
+                    this.closeCurrentModal(event);
                     break;
                 default:
                     console.warn(`Unbekannte Aktion: ${action}`);
@@ -321,6 +358,175 @@ class WinterRallyeApp {
             console.error(`Fehler bei Aktion ${action}:`, error);
             this.showErrorMessage(`Fehler bei ${action}: ${error.message}`);
         }
+    }
+
+    /**
+     * Behandelt Stage-2 Antwort-Eingabe
+     * @param {string} payload - Data-day oder zusätzliche Informationen
+     * @param {Event} event - Click-Event für Kontext
+     */
+    async submitStage2Answer(payload, event) {
+        try {
+            console.log('🎯 Stage-2 Antwort wird eingereicht...');
+
+            // Ermittle Tag aus Button oder payload
+            const day = parseInt(payload || event.target.getAttribute('data-day'));
+            if (!day || day < 1 || day > 24) {
+                console.error('❌ Ungültiger Tag für Stage-2 Antwort:', day);
+                this.showErrorMessage('Ungültiger Tag angegeben.');
+                return;
+            }
+
+            // Finde Antwort-Input-Feld
+            const answerInput = document.getElementById('stage2-answer');
+            if (!answerInput) {
+                console.error('❌ Stage-2 Antwort-Eingabefeld nicht gefunden');
+                this.showErrorMessage('Eingabefeld nicht gefunden.');
+                return;
+            }
+
+            const answerText = answerInput.value.trim();
+            if (!answerText) {
+                console.warn('⚠️ Leere Antwort bei Stage-2');
+                answerInput.focus();
+                return;
+            }
+
+            // Disable Submit-Button während Verarbeitung
+            const submitBtn = event.target;
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Wird gesendet...';
+
+            try {
+                // Session-ID aus Modal holen
+                const modal = document.getElementById('puzzle-modal');
+                const sessionId = modal ? modal.getAttribute('data-stage2-session') : null;
+
+                if (!sessionId) {
+                    console.warn('⚠️ Keine Session-ID gefunden, erstelle neue');
+                }
+
+                // Hole Puzzle-Daten für answer_meta
+                const calendar = this.modules.get('calendar');
+                const puzzleData = calendar ? await calendar.getPuzzle(day) : null;
+                const answerMeta = puzzleData?.stage2?.answer_meta || {};
+
+                // AnswersStore verwenden falls verfügbar
+                if (window.AnswersStore) {
+                    // Erstelle Payload im erwarteten Format
+                    const payload = {
+                        day,
+                        sessionId,
+                        answer_raw: answerText,
+                        stage2Config: answerMeta
+                    };
+
+                    const result = await window.WR_ANSWER_STORE.submitStage2Answer(payload);
+                    
+                    if (result && result.ok) {
+                        console.log('✅ Stage-2 Antwort erfolgreich eingereicht:', result);
+                        
+                        // Zeige spezifische Success-Message falls verfügbar
+                        const successMsg = answerMeta.success_message || 'Deine Antwort wurde erfolgreich eingereicht! 🎉';
+                        this.showSuccessMessage(successMsg);
+                        
+                        // Modal schließen nach kurzer Verzögerung
+                        setTimeout(() => {
+                            this.closeCurrentModal();
+                        }, 2000);
+                        
+                    } else {
+                        console.error('❌ Stage-2 Antwort-Einreichung fehlgeschlagen:', result);
+                        
+                        // Zeige spezifische Error-Message falls verfügbar
+                        const errorMsg = answerMeta.error_message || result?.errorMessage || 'Antwort konnte nicht gesendet werden.';
+                        this.showErrorMessage(errorMsg);
+                    }
+                } else {
+                    // Fallback ohne AnswersStore
+                    console.warn('⚠️ AnswersStore nicht verfügbar, nutze Fallback');
+                    this.saveStage2AnswerFallback(day, answerText, sessionId);
+                    this.showSuccessMessage('Antwort wurde lokal gespeichert.');
+                }
+
+            } finally {
+                // Submit-Button wieder aktivieren
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+
+        } catch (error) {
+            console.error('❌ Fehler bei Stage-2 Antwort-Einreichung:', error);
+            this.showErrorMessage('Fehler beim Senden der Antwort.');
+        }
+    }
+
+    /**
+     * Fallback-Speicherung für Stage-2 Antworten (ohne AnswersStore)
+     * @param {number} day - Tag des Rätsels
+     * @param {string} answer - Antwort-Text
+     * @param {string} sessionId - Session-ID
+     */
+    saveStage2AnswerFallback(day, answer, sessionId) {
+        try {
+            const timestamp = new Date().toISOString();
+            const answerData = {
+                day,
+                answer,
+                sessionId,
+                timestamp,
+                type: 'stage2'
+            };
+
+            // In localStorage speichern
+            const key = `stage2_answer_day${day}`;
+            localStorage.setItem(key, JSON.stringify(answerData));
+            
+            console.log('💾 Stage-2 Antwort lokal gespeichert:', answerData);
+            
+        } catch (error) {
+            console.error('❌ Fehler beim lokalen Speichern der Stage-2 Antwort:', error);
+        }
+    }
+
+    /**
+     * Schließt das aktuell geöffnete Modal
+     * @param {Event} event - Optional: Click-Event
+     */
+    closeCurrentModal(event) {
+        try {
+            const modal = document.getElementById('puzzle-modal');
+            if (modal) {
+                const calendar = this.modules.get('calendar');
+                if (calendar && typeof calendar.closeModal === 'function') {
+                    calendar.closeModal(modal);
+                } else {
+                    // Fallback
+                    modal.style.display = 'none';
+                    modal.classList.remove('show', 'modal-visible');
+                    document.body.classList.remove('modal-open');
+                }
+                console.log('✅ Modal geschlossen');
+            }
+        } catch (error) {
+            console.error('❌ Fehler beim Schließen des Modals:', error);
+        }
+    }
+
+    /**
+     * Zeigt eine Erfolgsmeldung an
+     * @param {string} message - Nachricht
+     */
+    showSuccessMessage(message) {
+        // Nutze existing Notification-System oder erstelle einfache Anzeige
+        if (window.showNotification && typeof window.showNotification === 'function') {
+            window.showNotification(message, 'success');
+        } else {
+            // Einfacher Alert als Fallback
+            alert(`✅ ${message}`);
+        }
+        console.log('✅ Erfolg:', message);
     }
 
     /**
@@ -343,7 +549,13 @@ class WinterRallyeApp {
             const currentTime = timeModule ? timeModule.getCurrentBerlinTime() : new Date();
             
             if (!this.isPuzzleAvailable(day, currentTime)) {
-                this.showErrorMessage(`Dieses Rätsel ist noch nicht verfügbar!`);
+                // Zeige spezifische Hinweise je nach WR_TIME Status
+                if (window.WR_TIME && day === window.WR_TIME.cfg.devTestDay) {
+                    const testTime = new Date(window.WR_TIME.cfg.devTestUnlockISO);
+                    this.showErrorMessage(`Türchen ${day} wird um ${window.WR_TIME.formatTimeHHMM(testTime)} Uhr freigeschaltet!`);
+                } else {
+                    this.showErrorMessage(`Türchen ${day} wird um 09:00 Uhr am ${day}. Dezember freigeschaltet!`);
+                }
                 return;
             }
 
@@ -365,10 +577,88 @@ class WinterRallyeApp {
     }
 
     /**
+     * Zeigt ein Rätsel im Modal an
+     */
+    displayPuzzleModal(puzzle) {
+        try {
+            const modal = document.getElementById('puzzle-modal');
+            const title = modal.querySelector('.modal__title');
+            const body = modal.querySelector('.modal__body');
+            const actions = modal.querySelector('.modal__actions');
+
+            if (!modal || !title || !body) {
+                console.error('❌ Modal-Elemente nicht gefunden');
+                return false;
+            }
+
+            // Bestimme Stage basierend auf puzzle.day
+            const day = puzzle.day || puzzle.meta?.day;
+            const stage = day <= 12 ? 1 : 2;
+
+            // Verwende Stage-spezifische Daten
+            const stageData = puzzle[`stage${stage}`] || puzzle;
+            
+            // Modal-Titel
+            title.textContent = stageData.title || 'Rätsel-Details';
+
+            // Modal-Inhalt für Stage 1
+            if (stage === 1) {
+                body.innerHTML = `
+                    <div class="puzzle-content">
+                        <div class="puzzle-teaser">
+                            ${stageData.teaser || ''}
+                        </div>
+                        <div class="puzzle-riddle">
+                            ${stageData.riddle_html || ''}
+                        </div>
+                        <div class="puzzle-answer-section">
+                            <label for="puzzle-answer">Deine Antwort:</label>
+                            <input type="text" id="puzzle-answer" placeholder="Antwort eingeben...">
+                            <button type="button" data-action="submit-answer" data-payload="${day}">
+                                Antwort prüfen
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Stage 2 - verwende renderStage2HintView über CalendarLogic
+                const calendarModule = this.modules.get('calendar');
+                if (calendarModule && calendarModule.renderStage2HintView) {
+                    calendarModule.renderStage2HintView(day, puzzle);
+                    return true;
+                } else {
+                    console.warn('⚠️ renderStage2HintView nicht verfügbar, verwende Fallback');
+                    body.innerHTML = `
+                        <div class="puzzle-content">
+                            <h3>Rätsel Tag ${day}</h3>
+                            <p>Details werden geladen...</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Modal öffnen
+            this.openModal(modal);
+
+            console.log(`✅ Modal für Tag ${day}, Stage ${stage} angezeigt`);
+            return true;
+
+        } catch (error) {
+            console.error('❌ Fehler beim Anzeigen des Rätsels im Modal:', error);
+            return false;
+        }
+    }
+
+    /**
      * Überprüft ob ein Rätsel verfügbar ist
      */
     isPuzzleAvailable(day, currentTime) {
-        // Dezember-Tage: 1-24
+        // Verwende neue WR_TIME API falls verfügbar
+        if (window.WR_TIME && typeof window.WR_TIME.isDoorUnlocked === 'function') {
+            return window.WR_TIME.isDoorUnlocked(day, currentTime);
+        }
+        
+        // Fallback: Alte Logik
         const currentDate = new Date(currentTime);
         const currentMonth = currentDate.getMonth() + 1; // 0-basiert
         const currentDay = currentDate.getDate();
@@ -395,6 +685,7 @@ class WinterRallyeApp {
             this.updateProgressDisplay();
             this.updateCalendarDisplay();
             this.updateStatsDisplay();
+            this.updateUserKeyDisplay();
         } catch (error) {
             console.error('Fehler beim UI-Update:', error);
         }
@@ -498,6 +789,31 @@ class WinterRallyeApp {
     }
 
     /**
+     * Aktualisiert die User-Key Anzeige
+     */
+    updateUserKeyDisplay() {
+        const userKeyDisplay = document.getElementById('user-key-display');
+        if (!userKeyDisplay) return;
+
+        try {
+            const userKey = window.WR_USER_KEY;
+            if (userKey && userKey !== 'unknown') {
+                // Zeige nur die letzten 4 Zeichen für bessere Sicherheit
+                const maskedKey = userKey.length > 4 
+                    ? `****-${userKey.slice(-4)}` 
+                    : userKey;
+                userKeyDisplay.textContent = maskedKey;
+                userKeyDisplay.setAttribute('data-full-key', userKey);
+            } else {
+                userKeyDisplay.textContent = 'nicht verfügbar';
+            }
+        } catch (error) {
+            console.error('Fehler bei User-Key Anzeige:', error);
+            userKeyDisplay.textContent = 'fehler beim Laden';
+        }
+    }
+
+    /**
      * Startet periodische Updates
      */
     startPeriodicUpdates() {
@@ -582,6 +898,167 @@ class WinterRallyeApp {
     handleBeforeUnload() {
         // Speichere State vor dem Verlassen
         this.saveUserState();
+    }
+
+    /**
+     * Initialisiert Kalender und Zeit-System
+     */
+    initCalendarAndTime() {
+        try {
+            // 1. Initialisiere Kalender falls verfügbar
+            if (window.CalendarLogic) {
+                if (typeof window.CalendarLogic.init === 'function') {
+                    window.CalendarLogic.init();
+                    console.log('✅ Kalender initialisiert');
+                } else {
+                    console.warn('⚠️ CalendarLogic.init() nicht verfügbar');
+                }
+            } else {
+                console.warn('⚠️ CalendarLogic Modul nicht geladen');
+            }
+
+            // 2. Starte Zeit-System falls verfügbar
+            if (window.WR_TIME) {
+                window.WR_TIME.startClock();
+                console.log('✅ WR_TIME Uhr gestartet');
+            } else {
+                console.warn('⚠️ WR_TIME Modul nicht geladen');
+            }
+
+            // 3. Prüfe URL-Parameter für automatisches Türchen-Öffnen
+            this.checkAutoOpenDoor();
+
+        } catch (error) {
+            console.error('❌ Fehler bei Kalender/Zeit-Initialisierung:', error);
+        }
+    }
+
+    /**
+     * Prüft URL-Parameter und öffnet Türchen automatisch falls verfügbar
+     */
+    checkAutoOpenDoor() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dayParam = urlParams.get('day');
+            const stageParam = urlParams.get('stage');
+            const qrParam = urlParams.get('qr');
+            
+            if (dayParam) {
+                const day = parseInt(dayParam);
+                if (day >= 1 && day <= 24) {
+                    // Prüfe ob das Türchen verfügbar ist
+                    const now = window.WR_TIME ? window.WR_TIME.getBerlinNow() : new Date();
+                    if (this.isPuzzleAvailable(day, now)) {
+                        
+                        // Stage-2 QR-Code spezielle Behandlung
+                        if (stageParam === '2' && qrParam) {
+                            this.handleStage2QRCode(day, qrParam);
+                            return;
+                        }
+                        
+                        // Warte kurz, dann öffne das Türchen normal
+                        setTimeout(() => {
+                            this.openPuzzle(day);
+                            console.log(`🎁 Automatisch geöffnet: Türchen ${day}`);
+                        }, 500);
+                    } else {
+                        console.log(`⏳ Türchen ${day} noch nicht verfügbar`);
+                    }
+                } else {
+                    console.warn(`❌ Ungültiger day Parameter: ${dayParam}`);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Fehler beim Auto-Open Check:', error);
+        }
+    }
+
+    /**
+     * Behandelt Stage-2 QR-Code Aufrufe
+     * @param {number} day - Tag des Rätsels (1-24)
+     * @param {string} qrToken - QR-Code Token für Verifikation
+     */
+    async handleStage2QRCode(day, qrToken) {
+        try {
+            console.log(`🔍 Verarbeite Stage-2 QR-Code für Tag ${day}:`, qrToken);
+
+            // QR-Code Verifikation
+            const qrVerify = this.modules.get('qrVerify');
+            if (!qrVerify) {
+                console.warn('⚠️ QR-Verifizierungs-Modul nicht verfügbar, nutze Test-Modus');
+                // Test-Modus: Alle QR-Codes als gültig betrachten
+                if (qrToken === 'test' || qrToken.includes('test')) {
+                    console.log('🧪 Test-Modus: QR-Code als gültig betrachtet');
+                } else {
+                    this.showErrorMessage('QR-Code Verifikation nicht möglich. Nutze ?qr=test für Tests.');
+                    return;
+                }
+            } else {
+                // Verifiziere QR-Token
+                const qrResult = await qrVerify.verifyToken(qrToken, { day, stage: 2 });
+                if (!qrResult || !qrResult.valid) {
+                    console.error('❌ QR-Code Verifikation fehlgeschlagen:', qrResult);
+                    this.showErrorMessage('Ungültiger QR-Code. Bitte versuche es erneut.');
+                    return;
+                }
+                console.log('✅ QR-Code erfolgreich verifiziert:', qrResult);
+            }
+
+            // Lade Puzzle-Daten
+            const calendar = this.modules.get('calendar');
+            if (!calendar) {
+                console.error('❌ Kalender-Modul nicht verfügbar');
+                this.showErrorMessage('Kalender nicht verfügbar.');
+                return;
+            }
+
+            const puzzle = await calendar.getPuzzle(day);
+            if (!puzzle || !puzzle.stage2) {
+                console.error('❌ Keine Stage-2 Daten für Tag gefunden:', day);
+                this.showErrorMessage('Stage-2 Daten nicht verfügbar.');
+                return;
+            }
+
+            // Zeige Stage-2 Hinweisansicht
+            const renderOptions = {
+                fromQr: true,
+                sessionId: this.generateSessionId(),
+                qrContext: {
+                    token: qrToken,
+                    verificationResult: qrResult,
+                    timestamp: new Date().toISOString()
+                }
+            };
+
+            const success = calendar.renderStage2HintView(day, puzzle, renderOptions);
+            if (!success) {
+                console.error('❌ Fehler beim Rendern der Stage-2 Ansicht');
+                this.showErrorMessage('Stage-2 Ansicht konnte nicht geladen werden.');
+                return;
+            }
+
+            console.log('🎯 Stage-2 QR-Code erfolgreich verarbeitet');
+
+            // URL bereinigen (Optional)
+            if (window.history && window.history.replaceState) {
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+
+        } catch (error) {
+            console.error('❌ Fehler bei Stage-2 QR-Code Verarbeitung:', error);
+            this.showErrorMessage('QR-Code konnte nicht verarbeitet werden.');
+        }
+    }
+
+    /**
+     * Generiert eine eindeutige Session-ID für Stage-2 Tracking
+     * @returns {string} Eindeutige Session-ID
+     */
+    generateSessionId() {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        return `stage2_${timestamp}_${random}`;
     }
 
     /**

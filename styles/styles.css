@@ -49,14 +49,50 @@ body {
     }
 }
 
+/* === Top-Bar === */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 1rem;
+    font-size: 0.875rem;
+    background: rgba(10, 31, 52, 0.95);
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.top-bar .skip-link {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.music-toggle {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.music-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
 /* === Header & Navigation === */
 .header {
     background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     color: var(--color-text-inverse);
     position: sticky;
-    top: 0;
+    top: 40px; /* Top-Bar Höhe berücksichtigen */
     z-index: var(--z-sticky);
     box-shadow: var(--shadow-md);
+    margin-top: 0;
 }
 
 .header__content {
@@ -147,6 +183,35 @@ body {
 .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
     text-decoration: none;
+}
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+    .nav-toggle {
+        display: block;
+    }
+
+    .header__nav .nav-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        background: #0f2436;
+        flex-direction: column;
+        gap: 0;
+        display: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .header__nav .nav-menu.nav-menu--open {
+        display: flex;
+    }
+
+    .header__nav .nav-link {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 0;
+    }
 }
 
 @media (min-width: 768px) {
@@ -960,6 +1025,30 @@ body {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+}
+
+/* === Mobile Kalender Layout === */
+@media (max-width: 768px) {
+    .calendar-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        padding: var(--space-3);
+    }
+    
+    .calendar-day, .calendar-tile {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+    }
+    
+    .calendar-day .calendar-icon, .calendar-tile .calendar-icon {
+        font-size: 0.9rem;
+        margin-bottom: 0.15rem;
+    }
+
+    /* Fallback: Icons ganz verstecken falls sie trotzdem zu groß sind */
+    .calendar-day .calendar-icon {
+        display: none;
     }
 }
 

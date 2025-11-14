@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage-2 Konsolen-Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .console {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-height: 500px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .step {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step.success { border-color: #28a745; background: #d4edda; }
+        .step.error { border-color: #dc3545; background: #f8d7da; }
+        .step.warning { border-color: #ffc107; background: #fff3cd; }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover { background: #0056b3; }
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Stage-2 System-Test & Konsolen-Check</h1>
+    
+    <div class="step" id="step1">
+        <h3>Schritt 1: System-Status prüfen</h3>
+        <button class="button" onclick="checkSystemStatus()">🔍 System prüfen</button>
+        <div id="system-status"></div>
+    </div>
+
+    <div class="step" id="step2">
+        <h3>Schritt 2: Stage-2 URL testen</h3>
+        <button class="button" onclick="testStage2URL()">🔗 Stage-2 URL testen</button>
+        <a href="/?day=2&stage=2&qr=test" target="_blank" class="button" style="text-decoration: none; display: inline-block;">🚀 Direkt zu Stage-2</a>
+        <div id="url-test-status"></div>
+    </div>
+
+    <div class="step" id="step3">
+        <h3>Schritt 3: JSON-Daten laden</h3>
+        <button class="button" onclick="testJSONLoading()">📄 JSON laden</button>
+        <div id="json-status"></div>
+    </div>
+
+    <div class="step" id="step4">
+        <h3>Schritt 4: Antwort-System testen</h3>
+        <button class="button" onclick="testAnswerSystem()">✅ Antworten testen</button>
+        <div id="answer-status"></div>
+    </div>
+
+    <div class="status-grid">
+        <div>
+            <h3>📋 Live-Konsole:</h3>
+            <div class="console" id="live-console">
+                Konsolen-Output wird hier angezeigt...
+            </div>
+        </div>
+        <div>
+            <h3>💾 LocalStorage:</h3>
+            <div class="console" id="storage-display">
+                LocalStorage wird hier angezeigt...
+            </div>
+        </div>
+    </div>
+
+    <!-- Load the actual app scripts -->
+    <script src="scripts/security.static.js"></script>
+    <script src="scripts/time.berlin.js"></script>
+    <script src="scripts/answers.store.js"></script>
+    <script src="scripts/calendar.logic.js"></script>
+    <script src="scripts/main.js"></script>
+
+    <script>
+        // Konsolen-Wrapper um alles zu loggen
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        let consoleOutput = [];
+        
+        function addToConsole(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            consoleOutput.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+            updateConsoleDisplay();
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole('log', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('error', ...args);
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('warn', ...args);
+        };
+        
+        function updateConsoleDisplay() {
+            const consoleEl = document.getElementById('live-console');
+            consoleEl.innerHTML = consoleOutput.slice(-50).join('\\n');
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        function updateStorageDisplay() {
+            const storageEl = document.getElementById('storage-display');
+            const keys = Object.keys(localStorage).filter(key => 
+                key.includes('wr_') || key.includes('stage2') || key.includes('winter')
+            );
+            
+            if (keys.length === 0) {
+                storageEl.innerHTML = 'Keine Winter-Rallye Daten gefunden.';
+            } else {
+                let output = [];
+                keys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    output.push(`${key}: ${value.substring(0, 100)}${value.length > 100 ? '...' : ''}`);
+                });
+                storageEl.innerHTML = output.join('\\n');
+            }
+        }
+        
+        async function checkSystemStatus() {
+            console.log('🔍 System-Status wird überprüft...');
+            const statusEl = document.getElementById('system-status');
+            const step1 = document.getElementById('step1');
+            
+            let status = [];
+            let allGood = true;
+            
+            // Check Scripts
+            const requiredScripts = ['WR_TIME', 'AnswersStore', 'CalendarLogic', 'WinterRallyeApp'];
+            requiredScripts.forEach(script => {
+                const available = window[script];
+                status.push(`${script}: ${available ? '✅' : '❌'}`);
+                if (!available) allGood = false;
+                console.log(`Script ${script}: ${available ? 'verfügbar' : 'nicht verfügbar'}`);
+            });
+            
+            statusEl.innerHTML = '<ul><li>' + status.join('</li><li>') + '</li></ul>';
+            step1.className = 'step ' + (allGood ? 'success' : 'warning');
+            
+            console.log('✅ System-Status Check abgeschlossen');
+        }
+        
+        async function testStage2URL() {
+            console.log('🔗 Teste Stage-2 URL Parameter...');
+            const statusEl = document.getElementById('url-test-status');
+            const step2 = document.getElementById('step2');
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const hasDay = urlParams.has('day');
+            const hasStage = urlParams.has('stage');
+            const hasQR = urlParams.has('qr');
+            
+            let status = [];
+            status.push(`day Parameter: ${hasDay ? '✅ ' + urlParams.get('day') : '❌'}`);
+            status.push(`stage Parameter: ${hasStage ? '✅ ' + urlParams.get('stage') : '❌'}`);
+            status.push(`qr Parameter: ${hasQR ? '✅ ' + urlParams.get('qr') : '❌'}`);
+            
+            console.log('URL Parameter:', {
+                day: urlParams.get('day'),
+                stage: urlParams.get('stage'),
+                qr: urlParams.get('qr')
+            });
+            
+            statusEl.innerHTML = '<ul><li>' + status.join('</li><li>') + '</li></ul>';
+            step2.className = 'step ' + (hasDay && hasStage && hasQR ? 'success' : 'warning');
+        }
+        
+        async function testJSONLoading() {
+            console.log('📄 Teste JSON-Daten Laden...');
+            const statusEl = document.getElementById('json-status');
+            const step3 = document.getElementById('step3');
+            
+            try {
+                const response = await fetch('/public/puzzles/raetsel/day-02.json');
+                console.log('JSON Response Status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('JSON Daten geladen:', data);
+                
+                const hasStage2 = data.stage2 && data.stage2.answer_meta;
+                const hasAccepted = hasStage2 && data.stage2.answer_meta.accepted;
+                
+                let status = [];
+                status.push(`JSON geladen: ✅`);
+                status.push(`Stage-2 Block: ${hasStage2 ? '✅' : '❌'}`);
+                status.push(`Antwort-Meta: ${hasAccepted ? '✅' : '❌'}`);
+                
+                if (hasAccepted) {
+                    status.push(`Akzeptierte Antworten: ${data.stage2.answer_meta.accepted.join(', ')}`);
+                }
+                
+                statusEl.innerHTML = '<ul><li>' + status.join('</li><li>') + '</li></ul>';
+                step3.className = 'step success';
+                
+            } catch (error) {
+                console.error('JSON Lade-Fehler:', error);
+                statusEl.innerHTML = `❌ Fehler: ${error.message}`;
+                step3.className = 'step error';
+            }
+        }
+        
+        async function testAnswerSystem() {
+            console.log('✅ Teste Antwort-System...');
+            const statusEl = document.getElementById('answer-status');
+            const step4 = document.getElementById('step4');
+            
+            try {
+                if (!window.AnswersStore) {
+                    throw new Error('AnswersStore nicht verfügbar');
+                }
+                
+                // Test Session Start
+                const sessionInfo = window.AnswersStore.trackStage2Start(2, 
+                    { test: true, location: 'Küchenklaus' }, 
+                    { fromTest: true }
+                );
+                console.log('Session gestartet:', sessionInfo);
+                
+                // Test verschiedene Antworten
+                const testAnswers = [
+                    'Plasmafilter',
+                    'PLASMA-FILTER',
+                    'plasma filter',
+                    'filter'
+                ];
+                
+                let results = [];
+                for (const answer of testAnswers) {
+                    try {
+                        const payload = {
+                            day: 2,
+                            sessionId: sessionInfo.sessionId + '_' + answer,
+                            answer_raw: answer,
+                            stage2Config: {
+                                normalize: 'lowercase, trim, collapse-spaces, replace-ä->ae',
+                                accepted: ['plasmafilter', 'plasma-filter']
+                            }
+                        };
+                        
+                        const result = await window.AnswersStore.submitStage2Answer(payload);
+                        const isCorrect = result && result.ok;
+                        results.push(`"${answer}" → ${isCorrect ? '✅ AKZEPTIERT' : '❌ ABGELEHNT'}`);
+                        console.log(`Antwort "${answer}":`, result);
+                        
+                    } catch (e) {
+                        results.push(`"${answer}" → ❌ FEHLER: ${e.message}`);
+                        console.error(`Fehler bei "${answer}":`, e);
+                    }
+                }
+                
+                statusEl.innerHTML = '<ul><li>' + results.join('</li><li>') + '</li></ul>';
+                step4.className = 'step success';
+                
+            } catch (error) {
+                console.error('Antwort-System Fehler:', error);
+                statusEl.innerHTML = `❌ Fehler: ${error.message}`;
+                step4.className = 'step error';
+            }
+        }
+        
+        // Auto-Update Storage Display
+        setInterval(updateStorageDisplay, 2000);
+        
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Stage-2 Test-Seite geladen');
+            console.log('URL:', window.location.href);
+            updateStorageDisplay();
+            
+            // Auto-Test wenn URL Parameter vorhanden
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('day')) {
+                setTimeout(() => {
+                    checkSystemStatus();
+                    setTimeout(() => testStage2URL(), 1000);
+                    setTimeout(() => testJSONLoading(), 2000);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

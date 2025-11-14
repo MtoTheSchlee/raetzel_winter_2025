@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage-2 Debug Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            border-left-color: #f44336;
+            background: #2a1a1a;
+        }
+        .warning {
+            border-left-color: #ff9800;
+            background: #2a2220;
+        }
+        .console-output {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn.warning {
+            background: #ff9800;
+        }
+        .btn.danger {
+            background: #f44336;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-ok { background: #4CAF50; }
+        .status-error { background: #f44336; }
+        .status-warning { background: #ff9800; }
+        #systemStatus {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Stage-2 Debug & Test Console</h1>
+    
+    <div id="systemStatus">
+        <h3>System Status</h3>
+        <div id="statusDisplay">Lade System-Status...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 Direkte URLs testen</h3>
+        <button class="btn" onclick="testURL('/?day=2&stage=2&qr=test')">Test: Tag 2 Stage-2 mit QR</button>
+        <button class="btn" onclick="testURL('/?day=2')">Test: Tag 2 Normal</button>
+        <button class="btn warning" onclick="testURL('/?day=2&stage=2')">Test: Stage-2 ohne QR (sollte fehlen)</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 QR-System Tests</h3>
+        <button class="btn" onclick="testQRCode('test')">Test QR: test</button>
+        <button class="btn" onclick="testQRCode('invalidcode')">Test QR: invalid</button>
+        <button class="btn" onclick="testQRCode('day2stage2test')">Test QR: day2stage2test</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Modal Tests</h3>
+        <button class="btn" onclick="testModalSystem()">Modal System testen</button>
+        <button class="btn" onclick="testStage2Modal()">Stage-2 Modal öffnen</button>
+        <button class="btn danger" onclick="closeTestModal()">Modal schließen</button>
+    </div>
+
+    <div class="test-section">
+        <h3>💾 Storage & Data Tests</h3>
+        <button class="btn" onclick="testLocalStorage()">LocalStorage testen</button>
+        <button class="btn" onclick="testJSONLoad()">JSON Daten laden</button>
+        <button class="btn" onclick="testAnswerSystem()">Antwort-System testen</button>
+    </div>
+
+    <div class="console-output" id="testOutput"></div>
+
+    <!-- Modal aus index.html -->
+    <div id="puzzle-modal" class="modal" style="display: none;">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h3 class="modal__title">Test Modal</h3>
+                <span class="modal__close" onclick="closeTestModal()">&times;</span>
+            </div>
+            <div class="modal__body">
+                <p>Modal Content wird hier geladen...</p>
+            </div>
+            <div class="modal__footer">
+                <button type="button" onclick="closeTestModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lade alle App-Scripts -->
+    <script src="scripts/utils/AnswersStore.js"></script>
+    <script src="scripts/calendar.logic.js"></script>
+    <script src="scripts/main.js"></script>
+
+    <script>
+        // Verbesserte Console-Funktionen mit HTML-Output
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+
+        function logToOutput(type, ...args) {
+            const output = document.getElementById('testOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = {
+                'log': '📝',
+                'error': '❌',
+                'warn': '⚠️',
+                'info': 'ℹ️'
+            };
+            
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    try {
+                        return JSON.stringify(arg, null, 2);
+                    } catch (e) {
+                        return String(arg);
+                    }
+                }
+                return String(arg);
+            }).join(' ');
+            
+            output.innerHTML += `<div style="color: ${type === 'error' ? '#ff6b6b' : type === 'warn' ? '#ffd93d' : '#6bcf7f'}">[${timestamp}] ${prefix[type]} ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+            
+            // Rufe auch original console auf
+            originalConsole[type](...args);
+        }
+
+        // Überschreibe console methods
+        console.log = (...args) => logToOutput('log', ...args);
+        console.error = (...args) => logToOutput('error', ...args);
+        console.warn = (...args) => logToOutput('warn', ...args);
+        console.info = (...args) => logToOutput('info', ...args);
+
+        // System-Status Checker
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('statusDisplay');
+            let status = [];
+
+            // Check if main components are loaded
+            status.push(typeof AnswersStore !== 'undefined' ? 
+                '<span class="status-indicator status-ok"></span>AnswersStore: ✅ Geladen' :
+                '<span class="status-indicator status-error"></span>AnswersStore: ❌ Fehlt');
+
+            status.push(typeof CalendarLogic !== 'undefined' ? 
+                '<span class="status-indicator status-ok"></span>CalendarLogic: ✅ Geladen' :
+                '<span class="status-indicator status-error"></span>CalendarLogic: ❌ Fehlt');
+
+            status.push(typeof MainApp !== 'undefined' ? 
+                '<span class="status-indicator status-ok"></span>MainApp: ✅ Geladen' :
+                '<span class="status-indicator status-error"></span>MainApp: ❌ Fehlt');
+
+            // Check LocalStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                status.push('<span class="status-indicator status-ok"></span>LocalStorage: ✅ Funktioniert');
+            } catch (e) {
+                status.push('<span class="status-indicator status-error"></span>LocalStorage: ❌ Fehler');
+            }
+
+            // Check Modal
+            const modal = document.getElementById('puzzle-modal');
+            status.push(modal ? 
+                '<span class="status-indicator status-ok"></span>Modal: ✅ Vorhanden' :
+                '<span class="status-indicator status-error"></span>Modal: ❌ Fehlt');
+
+            statusDiv.innerHTML = status.join('<br>');
+        }
+
+        // Test Funktionen
+        function testURL(url) {
+            console.log(`🔗 Teste URL: ${url}`);
+            try {
+                // Simuliere URL-Parameter
+                const urlObj = new URL(url, window.location.origin);
+                const params = new URLSearchParams(urlObj.search);
+                
+                console.log('📋 URL Parameter:', Object.fromEntries(params.entries()));
+                
+                // Teste MainApp URL-Handling
+                if (typeof MainApp !== 'undefined' && MainApp.instance) {
+                    console.log('🎯 MainApp verfügbar, teste Verarbeitung...');
+                    MainApp.instance.handleURLParams(params);
+                } else {
+                    console.warn('⚠️ MainApp nicht verfügbar');
+                }
+                
+            } catch (error) {
+                console.error('❌ URL Test Fehler:', error);
+            }
+        }
+
+        function testQRCode(code) {
+            console.log(`🔍 Teste QR-Code: ${code}`);
+            
+            try {
+                if (typeof MainApp !== 'undefined' && MainApp.instance) {
+                    MainApp.instance.handleStage2QRCode(2, code);
+                } else {
+                    console.warn('⚠️ MainApp nicht verfügbar für QR-Test');
+                }
+            } catch (error) {
+                console.error('❌ QR-Code Test Fehler:', error);
+            }
+        }
+
+        function testModalSystem() {
+            console.log('🎭 Teste Modal System...');
+            
+            const modal = document.getElementById('puzzle-modal');
+            if (!modal) {
+                console.error('❌ Modal nicht gefunden!');
+                return;
+            }
+
+            console.log('✅ Modal Element gefunden');
+            
+            // Test Modal-Selektoren
+            const title = modal.querySelector('.modal__title');
+            const body = modal.querySelector('.modal__body');
+            const footer = modal.querySelector('.modal__footer');
+            
+            console.log('🔍 Modal Elemente:', {
+                title: title ? '✅ Gefunden' : '❌ Fehlt',
+                body: body ? '✅ Gefunden' : '❌ Fehlt',
+                footer: footer ? '✅ Gefunden' : '❌ Fehlt'
+            });
+
+            // Teste CalendarLogic Modal-Funktionen
+            if (typeof CalendarLogic !== 'undefined') {
+                console.log('🎯 CalendarLogic verfügbar, teste Modal-Funktionen...');
+                try {
+                    CalendarLogic.showModal();
+                } catch (error) {
+                    console.error('❌ Modal Show Fehler:', error);
+                }
+            }
+        }
+
+        function testStage2Modal() {
+            console.log('🎯 Teste Stage-2 Modal...');
+            
+            try {
+                if (typeof CalendarLogic !== 'undefined') {
+                    CalendarLogic.renderStage2HintView(2);
+                } else {
+                    console.error('❌ CalendarLogic nicht verfügbar');
+                }
+            } catch (error) {
+                console.error('❌ Stage-2 Modal Fehler:', error);
+            }
+        }
+
+        function closeTestModal() {
+            console.log('🚪 Schließe Modal...');
+            
+            const modal = document.getElementById('puzzle-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('✅ Modal geschlossen');
+            }
+            
+            if (typeof CalendarLogic !== 'undefined') {
+                try {
+                    CalendarLogic.closeModal();
+                } catch (error) {
+                    console.warn('⚠️ CalendarLogic closeModal Fehler:', error);
+                }
+            }
+        }
+
+        function testLocalStorage() {
+            console.log('💾 Teste LocalStorage...');
+            
+            try {
+                // Test basic storage
+                localStorage.setItem('test_key', 'test_value');
+                const value = localStorage.getItem('test_key');
+                console.log('✅ LocalStorage schreibt/liest:', value === 'test_value');
+                
+                // Test AnswersStore if available
+                if (typeof AnswersStore !== 'undefined') {
+                    console.log('🎯 Teste AnswersStore...');
+                    const store = new AnswersStore();
+                    console.log('📋 Aktuelle Antworten:', store.getAllAnswers());
+                    
+                    // Test store answer
+                    store.storeAnswer(99, 'test_answer');
+                    console.log('💾 Test Antwort gespeichert');
+                    console.log('📋 Antworten nach Test:', store.getAllAnswers());
+                } else {
+                    console.warn('⚠️ AnswersStore nicht verfügbar');
+                }
+                
+                localStorage.removeItem('test_key');
+                console.log('🗑️ Test-Daten bereinigt');
+                
+            } catch (error) {
+                console.error('❌ LocalStorage Test Fehler:', error);
+            }
+        }
+
+        function testJSONLoad() {
+            console.log('📄 Teste JSON Daten laden...');
+            
+            fetch('/public/puzzles/raetsel/day-02.json')
+                .then(response => {
+                    console.log('🌐 HTTP Response Status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ JSON erfolgreich geladen:');
+                    console.log('📋 Stage-2 Daten:', data.stage2 || 'Nicht gefunden');
+                    
+                    if (data.stage2) {
+                        console.log('🎯 Küchenklaus Daten:', {
+                            headline: data.stage2.headline,
+                            hasHint: !!data.stage2.hint_html,
+                            answerMeta: data.stage2.answer_meta
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ JSON Lade-Fehler:', error);
+                });
+        }
+
+        function testAnswerSystem() {
+            console.log('🎯 Teste Antwort-System...');
+            
+            if (typeof CalendarLogic !== 'undefined') {
+                try {
+                    // Simuliere Antwort-Eingabe
+                    console.log('📝 Simuliere Antwort "plasmafilter"...');
+                    
+                    // Test answer validation
+                    const testAnswers = ['plasmafilter', 'plasma-filter', 'PLASMAFILTER', 'wronganswer'];
+                    testAnswers.forEach(answer => {
+                        console.log(`🧪 Teste Antwort: "${answer}"`);
+                        // Here would be the actual validation logic
+                    });
+                    
+                } catch (error) {
+                    console.error('❌ Antwort-System Test Fehler:', error);
+                }
+            } else {
+                console.warn('⚠️ CalendarLogic nicht verfügbar für Antwort-Tests');
+            }
+        }
+
+        // Auto-Start
+        window.addEventListener('load', () => {
+            console.log('🚀 Debug Console gestartet');
+            updateSystemStatus();
+            
+            // Check URL parameters
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('day') || params.has('stage') || params.has('qr')) {
+                console.log('🔗 URL Parameter erkannt:', Object.fromEntries(params.entries()));
+                console.log('🎯 Starte automatischen Test...');
+                
+                // Wait a bit for scripts to load
+                setTimeout(() => {
+                    if (typeof MainApp !== 'undefined' && MainApp.instance) {
+                        MainApp.instance.handleURLParams(params);
+                    }
+                }, 1000);
+            }
+        });
+
+        // Update status every few seconds
+        setInterval(updateSystemStatus, 5000);
+    </script>
+</body>
+</html>
