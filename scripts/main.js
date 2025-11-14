@@ -139,10 +139,10 @@ class WinterRallyeApp {
     async initializeModules() {
         const moduleConfigs = [
             { name: 'security', instance: window.SecurityStatic, required: true },
-            { name: 'time', instance: window.TimeBerlin, required: true },
-            { name: 'calendar', instance: window.CalendarLogic, required: true },
-            { name: 'qrVerify', instance: window.QRVerify, required: true },
-            { name: 'answerUtil', instance: window.AnswerUtil, required: true },
+            { name: 'time', instance: window.WR_TIME, required: true },
+            { name: 'calendar', instance: window.calendarLogic, required: true },
+            { name: 'qrVerify', instance: window.QRVerify, required: false },
+            { name: 'answerUtil', instance: window.AnswerUtil, required: false },
             { name: 'modalConfirm', instance: window.ModalConfirm, required: false },
             { name: 'tracking', instance: window.TrackingAdapter, required: false },
             { name: 'extendedMusic', instance: window.ExtendedChristmasMusicPlayer, required: false }
@@ -157,12 +157,15 @@ class WinterRallyeApp {
                         window.extendedChristmasMusic = new config.instance();
                         this.modules.set(config.name, window.extendedChristmasMusic);
                         console.log(`🎵 Extended Christmas Music Player initialisiert`);
-                    } else {
-                        // Initialisiere das Modul falls es eine init-Methode hat
+                    } else if (config.name === 'calendar') {
+                        // CalendarLogic ist bereits eine Instanz, initialisiere sie
                         if (typeof config.instance.init === 'function') {
                             await config.instance.init();
                         }
-                        
+                        this.modules.set(config.name, config.instance);
+                        console.log(`✅ Modul ${config.name} initialisiert`);
+                    } else {
+                        // Andere Module direkt verwenden (sind Objekte, keine Klassen)
                         this.modules.set(config.name, config.instance);
                         console.log(`✅ Modul ${config.name} initialisiert`);
                     }
@@ -546,7 +549,7 @@ class WinterRallyeApp {
 
             // Überprüfe Verfügbarkeit
             const timeModule = this.modules.get('time');
-            const currentTime = timeModule ? timeModule.getCurrentBerlinTime() : new Date();
+            const currentTime = timeModule ? timeModule.getBerlinNow() : new Date();
             
             if (!this.isPuzzleAvailable(day, currentTime)) {
                 // Zeige spezifische Hinweise je nach WR_TIME Status
@@ -698,11 +701,11 @@ class WinterRallyeApp {
         const timeModule = this.modules.get('time');
         if (!timeModule) return;
 
-        const currentTime = timeModule.getCurrentBerlinTime();
+        const currentTime = timeModule.getBerlinNow();
         const timeElement = document.getElementById('current-time');
         
         if (timeElement) {
-            timeElement.textContent = timeModule.formatTime(currentTime);
+            timeElement.textContent = timeModule.formatTimeHHMM(currentTime);
         }
 
         // Countdown bis zum nächsten Rätsel
@@ -717,11 +720,11 @@ class WinterRallyeApp {
         if (!countdownElement) return;
 
         const timeModule = this.modules.get('time');
-        const nextPuzzleTime = timeModule.getNextPuzzleTime(currentTime);
+        const nextPuzzleTime = timeModule.getNextDailyUnlock(currentTime);
         
         if (nextPuzzleTime) {
             const timeUntil = nextPuzzleTime.getTime() - currentTime.getTime();
-            countdownElement.textContent = timeModule.formatDuration(timeUntil);
+            countdownElement.textContent = timeModule.formatCountdown(timeUntil);
         } else {
             countdownElement.textContent = 'Alle Rätsel verfügbar';
         }
@@ -905,16 +908,12 @@ class WinterRallyeApp {
      */
     initCalendarAndTime() {
         try {
-            // 1. Initialisiere Kalender falls verfügbar
-            if (window.CalendarLogic) {
-                if (typeof window.CalendarLogic.init === 'function') {
-                    window.CalendarLogic.init();
-                    console.log('✅ Kalender initialisiert');
-                } else {
-                    console.warn('⚠️ CalendarLogic.init() nicht verfügbar');
-                }
+            // 1. Kalender wurde bereits in initializeModules() initialisiert
+            const calendarModule = this.modules.get('calendar');
+            if (calendarModule) {
+                console.log('✅ Kalender bereits initialisiert');
             } else {
-                console.warn('⚠️ CalendarLogic Modul nicht geladen');
+                console.warn('⚠️ Kalender Modul nicht verfügbar');
             }
 
             // 2. Starte Zeit-System falls verfügbar
@@ -1137,8 +1136,8 @@ class WinterRallyeApp {
 
     updateCalendarDisplay() {
         const calendarModule = this.modules.get('calendar');
-        if (calendarModule) {
-            calendarModule.updateDisplay();
+        if (calendarModule && typeof calendarModule.updateCalendarDisplay === 'function') {
+            calendarModule.updateCalendarDisplay();
         }
     }
 

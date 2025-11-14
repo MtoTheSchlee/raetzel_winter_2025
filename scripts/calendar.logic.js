@@ -124,7 +124,7 @@ class CalendarLogic {
             
             for (let day = 1; day <= this.config.totalDays; day++) {
                 try {
-                    const metadata = await this.loadPuzzleMetadata(day);
+                    const metadata = await this.loadPuzzleMetadataForDay(day);
                     if (metadata) {
                         this.puzzles.set(day, metadata);
                     }
@@ -147,7 +147,7 @@ class CalendarLogic {
     /**
      * Lädt Metadaten für ein bestimmtes Rätsel
      */
-    async loadPuzzleMetadata(day) {
+    async loadPuzzleMetadataForDay(day) {
         const url = `${this.config.puzzleBaseUrl}day-${day.toString().padStart(2, '0')}.json`;
         
         try {
@@ -178,6 +178,30 @@ class CalendarLogic {
      * Validiert Rätsel-Datenstruktur
      */
     validatePuzzleData(data, day) {
+        // Neue Struktur mit meta, stage1, stage2
+        if (data.meta && data.stage1) {
+            // Validiere meta-Informationen
+            if (!data.meta.day || !data.meta.shop_name) {
+                throw new Error('Meta-Informationen unvollständig');
+            }
+            
+            // Validiere Stage 1
+            if (!data.stage1.title || !data.stage1.riddle_html) {
+                throw new Error('Stage 1 Daten unvollständig');
+            }
+            
+            // Stage 2 ist optional, aber wenn vorhanden, prüfe Struktur
+            if (data.stage2) {
+                // Stage 2 kann entweder title oder headline haben
+                if (!data.stage2.title && !data.stage2.headline) {
+                    throw new Error('Stage 2 Titel/Headline fehlt');
+                }
+            }
+            
+            return; // Neue Struktur ist valid
+        }
+        
+        // Legacy-Struktur mit alten Feldern
         const requiredFields = ['title', 'description', 'type', 'points'];
         
         for (const field of requiredFields) {
@@ -186,7 +210,7 @@ class CalendarLogic {
             }
         }
 
-        // Typ-spezifische Validierung
+        // Typ-spezifische Validierung (Legacy)
         switch (data.type) {
             case 'location':
                 if (!data.location || !data.answerHash) {

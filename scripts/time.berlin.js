@@ -77,6 +77,22 @@ function isDoorUnlocked(day, now) {
 }
 
 /**
+ * Berechnet den aktuellen Dezember-Tag
+ */
+function getCurrentDecemberDay(now = new Date()) {
+  const month = now.getMonth() + 1; // 0-basiert
+  const date = now.getDate();
+  
+  if (month === 12) {
+    return Math.min(date, 24); // Maximal Tag 24
+  } else if (month > 12) {
+    return 24; // Nach Dezember: alle verfügbar
+  }
+  
+  return null; // Vor Dezember
+}
+
+/**
  * Formatiert einen Countdown in HH:MM:SS Format
  */
 function formatCountdown(deltaMs) {
@@ -142,6 +158,7 @@ window.WR_TIME = {
   getNextDailyUnlock: getNextDailyUnlock,
   getDoorUnlockDate: getDoorUnlockDate,
   isDoorUnlocked: isDoorUnlocked,
+  getCurrentDecemberDay: getCurrentDecemberDay,
   formatCountdown: formatCountdown,
   startClock: startClock
 };
