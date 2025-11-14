@@ -810,8 +810,9 @@ class CalendarLogic {
     }
 }
 
+// Export der Klasse für main.js
+window.CalendarLogic = CalendarLogic;
+
 // Globale Instanz erstellen
 const calendarLogic = new CalendarLogic();
-
-// Export für Module
-window.CalendarLogic = calendarLogic;
+window.calendarLogic = calendarLogic;

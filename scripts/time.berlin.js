@@ -10,7 +10,7 @@ const WR_TIME_CFG = {
   timeZone: 'Europe/Berlin',
   dailyUnlockHour: 9,
   dailyUnlockMinute: 0,
-  devTestUnlockISO: '2025-11-14T18:35:00+01:00',
+  devTestUnlockISO: new Date().toISOString(), // SOFORTIGER TEST
   devTestDay: 2
 };
 
