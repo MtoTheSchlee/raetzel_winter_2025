@@ -10,7 +10,7 @@ const WR_TIME_CFG = {
   timeZone: 'Europe/Berlin',
   dailyUnlockHour: 9,
   dailyUnlockMinute: 0,
-  devTestUnlockISO: '2025-11-14T18:35:00+01:00',
+  devTestUnlockISO: new Date().toISOString(), // SOFORTIGER TEST
   devTestDay: 2
 };
 
@@ -74,6 +74,22 @@ function isDoorUnlocked(day, now) {
   // Reguläre Freischaltung
   const unlockDate = getDoorUnlockDate(day);
   return now >= unlockDate;
+}
+
+/**
+ * Berechnet den aktuellen Dezember-Tag
+ */
+function getCurrentDecemberDay(now = new Date()) {
+  const month = now.getMonth() + 1; // 0-basiert
+  const date = now.getDate();
+  
+  if (month === 12) {
+    return Math.min(date, 24); // Maximal Tag 24
+  } else if (month > 12) {
+    return 24; // Nach Dezember: alle verfügbar
+  }
+  
+  return null; // Vor Dezember
 }
 
 /**
@@ -142,6 +158,7 @@ window.WR_TIME = {
   getNextDailyUnlock: getNextDailyUnlock,
   getDoorUnlockDate: getDoorUnlockDate,
   isDoorUnlocked: isDoorUnlocked,
+  getCurrentDecemberDay: getCurrentDecemberDay,
   formatCountdown: formatCountdown,
   startClock: startClock
 };
